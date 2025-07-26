@@ -1,0 +1,14 @@
+version: '3'
+
+tasks:
+  install-agent-core:
+    desc: "Install nets-nsso-agent-core-jakarta.jar to the local Maven repository"
+    cmds:
+      - |
+        mvn install:install-file \
+          -Dfile=libs/nets-nsso-agent-core-jakarta.jar \
+          -DgroupId=nets.nsso \
+          -DartifactId=agent-core-jakarta \
+          -Dversion=1.0.0 \
+          -Dpackaging=jar
+    silent: false
