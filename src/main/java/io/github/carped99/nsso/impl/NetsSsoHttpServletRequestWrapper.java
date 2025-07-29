@@ -51,26 +51,25 @@ final class NetsSsoHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
     /**
      * SSO 에이전트 타입 헤더를 추가합니다.
-     * 
+     *
      * <p>"SSOAgent-Type" 헤더가 없는 경우 "SPA" 값으로 설정합니다.</p>
-     * 
+     *
      * @return 현재 래퍼 인스턴스 (메서드 체이닝 지원)
      */
     public NetsSsoHttpServletRequestWrapper addSsoAgentType() {
-        if (!StringUtils.hasLength(getHeader("SSOAgent-Type"))) {
-            addHeader("SSOAgent-Type", "SPA");
-        }
-        return this;
+        return addHeader("SSOAgent-Type", "SPA");
     }
 
     /**
      * 커스텀 헤더를 추가합니다.
-     * 
-     * @param name 헤더 이름
+     *
+     * @param name  헤더 이름
      * @param value 헤더 값
+     * @return 현재 래퍼 (메서드 체이닝 지원)
      */
-    public void addHeader(String name, String value) {
+    public NetsSsoHttpServletRequestWrapper addHeader(String name, String value) {
         this.headers.computeIfAbsent(name, k -> new ArrayList<>()).add(value);
+        return this;
     }
 
     /**

@@ -7,9 +7,12 @@ import io.github.carped99.nsso.NetsSsoUser;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import nets.sso.agent.web.common.constant.SSOConst;
+import nets.sso.agent.web.common.exception.SSOException;
 import nets.sso.agent.web.v9.SSOAuthn;
 import nets.sso.agent.web.v9.SSOStatus;
 import nets.sso.agent.web.v9.SSOUser;
+import nets.sso.agent.web.v9.core.AuthnOperation;
 import nets.sso.agent.web.v9.core.AuthnStatus;
 import nets.sso.agent.web.v9.core.SSOConf;
 import org.apache.commons.logging.Log;
@@ -78,7 +81,9 @@ public class NetsSsoAuthenticationServiceImpl implements NetsSsoAuthenticationSe
         HttpServletRequest request = authentication.getRequest();
         HttpServletResponse response = authentication.getResponse();
 
-        var wrappedRequest = new NetsSsoHttpServletRequestWrapper(request).addSsoAgentType();
+        var wrappedRequest = new NetsSsoHttpServletRequestWrapper(request)
+                .addSsoAgentType()
+                .addHeader(SSOConst.OP, AuthnOperation.LOGIN.getValue());
 
         // 1) SSO 인증 객체 초기화
         SSOAuthn authn = SSOAuthn.get(wrappedRequest, response);

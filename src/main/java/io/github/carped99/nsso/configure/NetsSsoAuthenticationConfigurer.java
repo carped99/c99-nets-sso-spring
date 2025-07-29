@@ -1,7 +1,9 @@
 package io.github.carped99.nsso.configure;
 
-import io.github.carped99.nsso.NetsSsoAccessTokenFilter;
+import io.github.carped99.nsso.NetsSsoAuthenticationFilter;
+import io.github.carped99.nsso.NetsSsoLogoutFilter;
 import io.github.carped99.nsso.NetsSsoRefreshTokenFilter;
+import io.github.carped99.nsso.impl.NetsSsoLogoutHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,6 +18,7 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.*;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -27,6 +30,9 @@ import org.springframework.util.Assert;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static io.github.carped99.nsso.configure.NetsSsoConfigurerUtils.normalizePath;
+import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 /**
  * NSSO 인증 설정의 메인 컨피규러
@@ -61,7 +67,7 @@ import java.util.Objects;
  * }</pre>
  * 
  * @see org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer
- * @see NetsSsoAccessTokenFilter
+ * @see NetsSsoAuthenticationFilter
  * @see NetsSsoRefreshTokenFilter
  * 
  * @author tykim
@@ -78,12 +84,14 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource;
     private AuthenticationSuccessHandler successHandler;
     private AuthenticationFailureHandler failureHandler;
+    private LogoutSuccessHandler logoutSuccessHandler;
 
     private final NetsSsoAgentFilterConfigurer<B> agentFilterConfigurer = new NetsSsoAgentFilterConfigurer<>();
     private NetsSsoMockServerConfigurer<B> mockServerConfigurer;
 
+    private RequestMatcher loginProcessRequestMatcher;
+    private RequestMatcher logoutProcessRequestMatcher;
     private RequestMatcher requestTokenRequestMatcher;
-    private RequestMatcher accessTokenRequestMatcher;
 
     /**
      * NSSO 인증 설정 컨피규러의 새 인스턴스를 생성합니다.
@@ -196,6 +204,19 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
     }
 
     /**
+     * 로그아웃 성공 핸들러를 설정한다.
+     *
+     * @param logoutSuccessHandler 인증 실패 핸들러
+     * @return 현재 컨피규러 인스턴스 (메서드 체이닝 지원)
+     */
+    public NetsSsoAuthenticationConfigurer<B> logoutSuccessHandler(LogoutSuccessHandler logoutSuccessHandler) {
+        Assert.notNull(logoutSuccessHandler, "logoutSuccessHandler must not be null");
+        this.logoutSuccessHandler = logoutSuccessHandler;
+        return this;
+    }
+
+
+    /**
      * Mock 서버를 커스터마이징한다.
      * 
      * @param customizer Mock 서버 커스터마이저
@@ -225,22 +246,31 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
         this.agentFilterConfigurer.setPrefixPath(this.prefixPath);
         this.agentFilterConfigurer.configure(http);
 
-        configureAccessTokenFilter(http);
+        configureAuthenticationFilter(http);
+        configureLogoutFilter(http);
         configureRefreshTokenFilter(http);
 
         configureEndpointsMatcher();
     }
 
-    private void configureAccessTokenFilter(B http) {
-        String processingUrl = NetsSsoConfigurerUtils.normalizePath(this.prefixPath, "/access_token");
-        this.accessTokenRequestMatcher = AntPathRequestMatcher.antMatcher(HttpMethod.POST, processingUrl);
-        var filter = new NetsSsoAccessTokenFilter(accessTokenRequestMatcher);
+    private void configureAuthenticationFilter(B http) {
+        String url = normalizePath(this.prefixPath, "/login");
+        this.loginProcessRequestMatcher = antMatcher(HttpMethod.POST, url);
+        var filter = new NetsSsoAuthenticationFilter(loginProcessRequestMatcher);
         configureAuthenticationProcessingFilter(http, filter);
     }
 
+    private void configureLogoutFilter(B http) {
+        String url = normalizePath(this.prefixPath, "/logout");
+        this.logoutProcessRequestMatcher = antMatcher(url);
+        var filter = new NetsSsoLogoutFilter(logoutSuccessHandler, new NetsSsoLogoutHandler());
+        filter.setLogoutRequestMatcher(logoutProcessRequestMatcher);
+    }
+
+
     private void configureRefreshTokenFilter(B http) {
-        String processingUrl = NetsSsoConfigurerUtils.normalizePath(this.prefixPath, "/refresh_token");
-        this.requestTokenRequestMatcher = AntPathRequestMatcher.antMatcher(HttpMethod.POST, processingUrl);
+        String url = normalizePath(this.prefixPath, "/refresh_token");
+        this.requestTokenRequestMatcher = antMatcher(HttpMethod.POST, url);
         var filter = new NetsSsoRefreshTokenFilter(requestTokenRequestMatcher);
         configureAuthenticationProcessingFilter(http, filter);
     }
@@ -264,7 +294,8 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
 
     private void configureEndpointsMatcher() {
         List<RequestMatcher> requestMatchers = new ArrayList<>();
-        requestMatchers.add(this.accessTokenRequestMatcher);
+        requestMatchers.add(this.loginProcessRequestMatcher);
+        requestMatchers.add(this.logoutProcessRequestMatcher);
         requestMatchers.add(this.requestTokenRequestMatcher);
         requestMatchers.add(this.agentFilterConfigurer.getRequestMatcher());
 

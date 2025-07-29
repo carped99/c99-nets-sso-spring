@@ -42,12 +42,12 @@ import java.util.Objects;
  * @author tykim
  * @since 0.0.0
  */
-public class NetsSsoAccessTokenFilter extends AbstractAuthenticationProcessingFilter {
+public class NetsSsoAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
     /**
      * 기본 URL("/nsso/access_token")로 NetsSsoAccessTokenFilter를 생성합니다.
      */
-    public NetsSsoAccessTokenFilter() {
-        super("/nsso/access_token");
+    public NetsSsoAuthenticationFilter() {
+        super("/nsso/login");
     }
 
     /**
@@ -55,7 +55,7 @@ public class NetsSsoAccessTokenFilter extends AbstractAuthenticationProcessingFi
      * 
      * @param requestMatcher 요청을 매칭하는 RequestMatcher
      */
-    public NetsSsoAccessTokenFilter(RequestMatcher requestMatcher) {
+    public NetsSsoAuthenticationFilter(RequestMatcher requestMatcher) {
         super(requestMatcher);
     }
 
@@ -93,14 +93,6 @@ public class NetsSsoAccessTokenFilter extends AbstractAuthenticationProcessingFi
      * @throws NetsSsoAuthenticationException 필수 파라미터가 누락되거나 잘못된 경우
      */
     private void validateParameters(HttpServletRequest request) {
-        String op = request.getParameter(SSOConst.OP);
-        if (!StringUtils.hasLength(op)) {
-            throw new NetsSsoAuthenticationException(SSOExceptionCode.MissingParam, "op must not be empty");
-        }
-        if (!Objects.equals(op, "LI")) {
-            throw new NetsSsoAuthenticationException(SSOExceptionCode.InvalidParam, "op must be 'LI'");
-        }
-
         String ssosite = request.getParameter(SSOConst.SITE_ID);
         if (!StringUtils.hasLength(ssosite)) {
             throw new NetsSsoAuthenticationException(SSOExceptionCode.MissingParam, "ssosite must not be empty");
