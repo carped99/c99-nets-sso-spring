@@ -54,11 +54,12 @@ public class NetsSsoAgentFilter extends OncePerRequestFilter {
     private final RequestMatcher dupRequestMatcher;
     private final RequestMatcher tfaRequestMatcher;
     private final RequestMatcher keyRequestMatcher;
+    private final RequestMatcher requestMatcher;
 
     /**
      * 생성자
      *
-     * @param prefixPath NSSO 에이전트 요청의 접두사 경로
+     * @param prefixPath   NSSO 에이전트 요청의 접두사 경로
      * @param agentService NSSO 에이전트 서비스 인스턴스
      */
     public NetsSsoAgentFilter(String prefixPath, NetsSsoAgentService agentService) {
@@ -69,25 +70,33 @@ public class NetsSsoAgentFilter extends OncePerRequestFilter {
         this.dupRequestMatcher = antMatcher(HttpMethod.POST, normalizePath(prefixPath, "/duplication"));
         this.tfaRequestMatcher = antMatcher(HttpMethod.POST, normalizePath(prefixPath, "/tfa"));
         this.keyRequestMatcher = antMatcher(HttpMethod.POST, normalizePath(prefixPath, "/key"));
+
+        this.requestMatcher = new OrRequestMatcher(
+                checkRequestMatcher,
+                configRequestMatcher,
+                dupRequestMatcher,
+                tfaRequestMatcher,
+                keyRequestMatcher
+        );
+
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         String result;
 
-        if (checkRequestMatcher != null && checkRequestMatcher.matches(request)) {
+        if (checkRequestMatcher.matches(request)) {
             result = tryProcess(() -> agentService.check(request, response));
-        } else if (configRequestMatcher != null && configRequestMatcher.matches(request)) {
+        } else if (configRequestMatcher.matches(request)) {
             result = tryProcess(() -> agentService.config(request, response));
-        } else if (dupRequestMatcher != null && dupRequestMatcher.matches(request)) {
+        } else if (dupRequestMatcher.matches(request)) {
             result = tryProcess(() -> agentService.duplicate(request, response));
-        } else if (tfaRequestMatcher != null && tfaRequestMatcher.matches(request)) {
+        } else if (tfaRequestMatcher.matches(request)) {
             result = tryProcess(() -> agentService.tfa(request, response));
-        } else if (keyRequestMatcher != null && keyRequestMatcher.matches(request)) {
+        } else if (keyRequestMatcher.matches(request)) {
             result = tryProcess(() -> agentService.key(request, response));
         } else {
-            filterChain.doFilter(request, response);
-            return;
+            throw new IllegalStateException("Unsupported request type: " + request.getMethod() + " " + request.getRequestURI());
         }
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -96,6 +105,11 @@ public class NetsSsoAgentFilter extends OncePerRequestFilter {
 
         // writer는 닫지 않는다.
         response.getWriter().write(result);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        return !this.requestMatcher.matches(request);
     }
 
     /**
@@ -107,13 +121,7 @@ public class NetsSsoAgentFilter extends OncePerRequestFilter {
      * @return NSSO 에이전트 요청을 처리할 RequestMatcher
      */
     public RequestMatcher getRequestMatcher() {
-        return new OrRequestMatcher(
-                checkRequestMatcher,
-                configRequestMatcher,
-                dupRequestMatcher,
-                tfaRequestMatcher,
-                keyRequestMatcher
-        );
+        return this.requestMatcher;
     }
 
     /**

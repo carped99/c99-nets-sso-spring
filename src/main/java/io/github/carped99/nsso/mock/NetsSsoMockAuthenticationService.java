@@ -3,6 +3,7 @@ package io.github.carped99.nsso.mock;
 import io.github.carped99.nsso.NetsSsoAuthentication;
 import io.github.carped99.nsso.NetsSsoAuthenticationService;
 import io.github.carped99.nsso.NetsSsoUser;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import nets.sso.agent.web.common.constant.SSOConst;
 import nets.sso.agent.web.v9.SSOUser;
@@ -12,8 +13,10 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.WebUtils;
 
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * NSSO 인증 서비스의 Mock 구현체
@@ -87,7 +90,11 @@ public class NetsSsoMockAuthenticationService implements NetsSsoAuthenticationSe
         if (StringUtils.hasText(ssoResponse)) {
             return ConverterUtils.decodeUsername(ssoResponse);
         }
-        return "";
+
+        return Optional.ofNullable(WebUtils.getCookie(request, "nsso-mock-auth"))
+                .map(Cookie::getValue)
+                .map(ConverterUtils::decodeUsername)
+                .orElse("");
     }
 
     private SSOUser findUser(String username, HttpServletRequest request) {

@@ -285,22 +285,6 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
         http.addFilter(filter);
     }
 
-    private LogoutHandler[] getLogoutHandlers() {
-        List<LogoutHandler> handlers = new ArrayList<>();
-
-        // 기본 로그아웃 핸들러 추가
-        if (this.mockServerConfigurer != null && this.mockServerConfigurer.isEnabled()) {
-            handlers.add(new NetsSsoMockLogoutHandler());
-        } else {
-            handlers.add(new NetsSsoLogoutHandler());
-        }
-
-        if (this.logoutHandlers != null) {
-            handlers.addAll(Arrays.asList(this.logoutHandlers));
-        }
-        return handlers.toArray(new LogoutHandler[0]);
-    }
-
     private void configureRefreshTokenFilter(B http) {
         String url = normalizePath(this.prefixPath, "/refresh_token");
         this.requestTokenRequestMatcher = antMatcher(HttpMethod.POST, url);
@@ -339,6 +323,22 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
         this.endpointsMatcher = new OrRequestMatcher(requestMatchers);
 
         log.debug("NetsSsoAuthentication endpoints:  " + this.endpointsMatcher);
+    }
+
+    private LogoutHandler[] getLogoutHandlers() {
+        List<LogoutHandler> handlers = new ArrayList<>();
+
+        // 기본 로그아웃 핸들러 추가
+        if (this.mockServerConfigurer != null && this.mockServerConfigurer.isEnabled()) {
+            handlers.add(new NetsSsoMockLogoutHandler());
+        } else {
+            handlers.add(new NetsSsoLogoutHandler());
+        }
+
+        if (this.logoutHandlers != null) {
+            handlers.addAll(Arrays.asList(this.logoutHandlers));
+        }
+        return handlers.toArray(new LogoutHandler[0]);
     }
 
     @SuppressWarnings("unchecked")

@@ -81,24 +81,23 @@ public class NetsSsoAuthenticationServiceImpl implements NetsSsoAuthenticationSe
         HttpServletResponse response = authentication.getResponse();
 
         var wrappedRequest = new NetsSsoHttpServletRequestWrapper(request)
-                .addSsoAgentType()
-                .addHeader(SSOConst.OP, AuthnOperation.LOGIN.getValue());
+                .addSsoAgentType();
 
         // 1) SSO 인증 객체 초기화
         SSOAuthn authn = SSOAuthn.get(wrappedRequest, response);
         SSOStatus status = authn.authnLoginStay();
 
-        if (status.getStatus() == AuthnStatus.SSO_SUCCESS) {
-            log.debug(String.format("SSO authenticated: code=%s, status=%s, message=%s", status.getCode(), status.getStatus(), status.getMessage()));
-            SSOUser ssoUser = authn.authn();
+        log.debug(String.format("NSSO authenticaion result: code=%s, status=%s, message=%s", status.getCode(), status.getStatus(), status.getMessage()));
 
+        if (status.getStatus() == AuthnStatus.SSO_SUCCESS) {
+            SSOUser ssoUser = authn.authn();
             NetsSsoUser principal = new NetsSsoUser(ssoUser, AuthorityUtils.NO_AUTHORITIES);
             NetsSsoAuthentication authenticated = NetsSsoAuthentication.authenticated(principal, principal.getAuthorities());
-            authenticated.setDetails(new WebAuthenticationDetails(request));
+            authenticated.setDetails(new WebAuthenticationDetails(ssoUser.getUserIP(), ssoUser.getSessionID()));
             return authenticated;
-        } else {
-            throw ExceptionUtil.from(status);
         }
+
+        throw ExceptionUtil.from(status);
     }
 
     /**
