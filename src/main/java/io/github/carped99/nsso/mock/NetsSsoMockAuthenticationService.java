@@ -18,6 +18,8 @@ import org.springframework.web.util.WebUtils;
 import java.util.Date;
 import java.util.Optional;
 
+import static io.github.carped99.nsso.mock.ConverterUtils.MOCK_COOKIE_NAME;
+
 /**
  * NSSO 인증 서비스의 Mock 구현체
  *
@@ -41,7 +43,7 @@ import java.util.Optional;
  *
  * <p>사용 예시:</p>
  * <pre>{@code
- * @Profile("nsso-mock")
+ * @Profile("mocking-nsso")
  * @Service
  * public class MockAuthenticationService extends NetsSsoAuthenticationMockService {
  *     // 커스텀 Mock 로직 추가 가능
@@ -91,7 +93,7 @@ public class NetsSsoMockAuthenticationService implements NetsSsoAuthenticationSe
             return ConverterUtils.decodeUsername(ssoResponse);
         }
 
-        return Optional.ofNullable(WebUtils.getCookie(request, "nsso-mock-auth"))
+        return Optional.ofNullable(WebUtils.getCookie(request, MOCK_COOKIE_NAME))
                 .map(Cookie::getValue)
                 .map(ConverterUtils::decodeUsername)
                 .orElse("");

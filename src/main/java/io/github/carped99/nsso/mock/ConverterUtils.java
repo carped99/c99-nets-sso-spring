@@ -13,6 +13,8 @@ import java.util.Base64;
 class ConverterUtils {
     private static final HttpMessageConverter<Object> converter = new MappingJackson2HttpMessageConverter();
 
+    public static final String MOCK_COOKIE_NAME = "mocking-nsso-auth";
+
     private ConverterUtils() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }

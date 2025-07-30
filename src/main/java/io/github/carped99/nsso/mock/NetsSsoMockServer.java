@@ -36,7 +36,7 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
  *
  * <p>프로파일 기반 활성화:</p>
  * <pre>{@code
- * @Profile("nsso-mock")
+ * @Profile("mocking-nsso")
  * @Bean
  * public NetsSsoMockServer mockServer() {
  *     return new NetsSsoMockServer();

@@ -46,7 +46,7 @@ import static io.github.carped99.nsso.NetsSsoUtils.normalizePath;
  * http
  *     .with(NetsSsoAuthenticationConfigurer.ssoConfigurer(), sso -> sso
  *         .mockServer(server -> server
- *             .profiles("nsso-mock")
+ *             .profiles("mocking-nsso")
  *             .checkCustomizer(data -> data.put("customField", "value"))
  *             .configCustomizer(data -> data.put("configField", "value"))
  *         )

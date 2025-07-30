@@ -12,6 +12,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 
 import java.io.IOException;
 
+import static io.github.carped99.nsso.mock.ConverterUtils.MOCK_COOKIE_NAME;
+
 /**
  * NSSO Mock 인증 성공 핸들러
  *
@@ -49,9 +51,9 @@ public class NetsSsoMockAuthenticationSuccessHandler implements AuthenticationSu
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
         String value = ConverterUtils.encodeUsername(authentication.getName());
 
-        log.info("Set-Cookie: nsso-mock-auth=" + value);
+        log.info(String.format("Set-Cookie: %s=%s", MOCK_COOKIE_NAME, value));
 
-        ResponseCookie cookie = ResponseCookie.from("nsso-mock-auth", value)
+        ResponseCookie cookie = ResponseCookie.from(MOCK_COOKIE_NAME, value)
                 .path("/")
                 .httpOnly(true)
                 .build();

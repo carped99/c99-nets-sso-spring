@@ -2,11 +2,11 @@ package io.github.carped99.nsso.mock;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+
+import static io.github.carped99.nsso.mock.ConverterUtils.MOCK_COOKIE_NAME;
 
 /**
  * NSSO Mock 로그아웃 핸들러
@@ -24,16 +24,11 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
  * @since 0.0.1
  */
 public class NetsSsoMockLogoutHandler implements LogoutHandler {
-    /**
-     * 로그 인스턴스
-     */
-    protected final Log log = LogFactory.getLog(getClass());
 
-    private final CookieClearingLogoutHandler logoutHandler = new CookieClearingLogoutHandler("nsso-mock-auth");
+    private final CookieClearingLogoutHandler logoutHandler = new CookieClearingLogoutHandler(MOCK_COOKIE_NAME);
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        log.info("Clear cookies: nsso-mock-auth");
         logoutHandler.logout(request, response, authentication);
     }
 }

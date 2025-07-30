@@ -16,7 +16,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.*;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -108,7 +107,7 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
     }
 
     /**
-     * {@link SecurityFilterChain} 생성을 위한 기본 설정을 적용
+     * 기본 설정을 적용
      * <pre>
      *     {@code
      *             NetsSsoAuthenticationConfigurer<HttpSecurity> configurer = ssoConfigurer();
@@ -120,8 +119,9 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
      *                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
      *                 )
      *                 .with(configurer, sso -> sso
+     *                         .prefixUrl("/nsso")
      *                         .mockServer(server -> server
-     *                                 .profiles("nsso-mock")
+     *                                 .profiles("mocking-nsso")
      *                         )
      *                 );
      *     }
@@ -142,12 +142,11 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .with(configurer, sso -> sso
+                        .prefixUrl("/nsso")
                         .mockServer(server -> server
-                                .profiles("nsso-mock")
+                                .profiles("mocking-nsso")
                         )
                 );
-
-
         return configurer;
     }
 
@@ -175,11 +174,11 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
      * NSSO 인증 엔드포인트의 URL 접두사를 설정합니다.
      * 기본값은 "/nsso"입니다.
      *
-     * @param prefixUrl NSSO 인증 엔드포인트의 URL 접두사
+     * @param prefixPath NSSO 인증 엔드포인트의 URL 접두사
      * @return 현재 컨피규러 인스턴스
      */
-    public NetsSsoAuthenticationConfigurer<B> prefixUrl(String prefixUrl) {
-        this.prefixPath = prefixUrl;
+    public NetsSsoAuthenticationConfigurer<B> prefixUrl(String prefixPath) {
+        this.prefixPath = prefixPath;
         return this;
     }
 
