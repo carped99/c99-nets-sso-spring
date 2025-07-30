@@ -31,8 +31,8 @@ import java.util.Map;
  * @see org.springframework.security.core.AuthenticatedPrincipal
  * @see org.springframework.security.core.GrantedAuthority
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 public interface NetsSsoUser extends AuthenticatedPrincipal {
     /**

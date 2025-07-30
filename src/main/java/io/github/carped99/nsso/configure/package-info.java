@@ -38,8 +38,8 @@
  * @see io.github.carped99.nsso.configure.NetsSsoAgentFilterConfigurer
  * @see io.github.carped99.nsso.configure.NetsSsoMockServerConfigurer
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 @NonNullApi
 package io.github.carped99.nsso.configure;

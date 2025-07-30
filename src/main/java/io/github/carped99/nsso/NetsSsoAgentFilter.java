@@ -45,8 +45,8 @@ import java.util.function.Supplier;
  * @see NetsSsoAgentTfaService
  * @see NetsSsoAgentKeyService
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 public class NetsSsoAgentFilter extends OncePerRequestFilter {
     private RequestMatcher checkRequestMatcher;

@@ -5,6 +5,9 @@ import io.github.carped99.nsso.NetsSsoAgentConfigService;
 import io.github.carped99.nsso.NetsSsoAuthenticationService;
 import io.github.carped99.nsso.mock.NetsSsoAuthenticationMockService;
 import io.github.carped99.nsso.mock.NetsSsoMockServer;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.lang.Nullable;
@@ -20,10 +23,10 @@ import java.util.Map;
 
 /**
  * NSSO Mock 서버 설정 컨피규러
- * 
+ *
  * <p>이 클래스는 NSSO Mock 서버를 Spring Security 설정에 추가하는 컨피규러입니다.
  * 개발 및 테스트 환경에서 실제 NSSO 서버 없이도 SSO 기능을 테스트할 수 있도록 Mock 서버를 구성합니다.</p>
- * 
+ *
  * <p>주요 기능:</p>
  * <ul>
  *   <li>프로파일 기반 Mock 서버 활성화</li>
@@ -31,7 +34,7 @@ import java.util.Map;
  *   <li>Mock 에이전트 서비스 자동 등록</li>
  *   <li>커스터마이저를 통한 응답 데이터 커스터마이징</li>
  * </ul>
- * 
+ *
  * <p>설정 과정:</p>
  * <ol>
  *   <li>프로파일 확인 및 활성화 여부 결정</li>
@@ -40,7 +43,7 @@ import java.util.Map;
  *   <li>Mock 서버를 Spring Security에 추가</li>
  *   <li>Mock 서비스들을 Bean으로 등록</li>
  * </ol>
- * 
+ *
  * <p>사용 예시:</p>
  * <pre>{@code
  * http
@@ -52,15 +55,15 @@ import java.util.Map;
  *         )
  *     );
  * }</pre>
- * 
+ *
+ * @author carped99
  * @see io.github.carped99.nsso.mock.NetsSsoMockServer
  * @see io.github.carped99.nsso.mock.NetsSsoAuthenticationMockService
  * @see org.springframework.security.config.annotation.SecurityConfigurerAdapter
- * 
- * @author tykim
- * @since 0.0.0
+ * @since 0.0.1
  */
 public class NetsSsoMockServerConfigurer<B extends HttpSecurityBuilder<B>> extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, B> {
+    private final Log log = LogFactory.getLog(getClass());
     private String[] profiles;
     private String prefixPath;
     private NetsSsoMockServer mockServer;
@@ -74,6 +77,7 @@ public class NetsSsoMockServerConfigurer<B extends HttpSecurityBuilder<B>> exten
     public void configure(B builder) throws Exception {
         Environment environment = builder.getSharedObject(ApplicationContext.class).getEnvironment();
         if (!isEnabled(environment)) {
+            log.debug("NSSO Mock Server is not enabled");
             return;
         }
 
@@ -95,7 +99,7 @@ public class NetsSsoMockServerConfigurer<B extends HttpSecurityBuilder<B>> exten
 
     /**
      * 활성화할 프로파일을 설정한다.
-     * 
+     *
      * @param profiles 활성화할 프로파일 목록
      * @return 현재 컨피규러 인스턴스 (메서드 체이닝 지원)
      */
@@ -106,7 +110,7 @@ public class NetsSsoMockServerConfigurer<B extends HttpSecurityBuilder<B>> exten
 
     /**
      * 체크 서비스 응답 데이터 커스터마이저를 설정합니다.
-     * 
+     *
      * @param customizer 체크 서비스 커스터마이저
      * @return 현재 컨피규러 인스턴스 (메서드 체이닝 지원)
      * @throws IllegalArgumentException customizer가 null인 경우
@@ -119,7 +123,7 @@ public class NetsSsoMockServerConfigurer<B extends HttpSecurityBuilder<B>> exten
 
     /**
      * 설정 서비스 응답 데이터 커스터마이저를 설정합니다.
-     * 
+     *
      * @param customizer 설정 서비스 커스터마이저
      * @return 현재 컨피규러 인스턴스 (메서드 체이닝 지원)
      * @throws IllegalArgumentException customizer가 null인 경우

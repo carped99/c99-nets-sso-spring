@@ -50,8 +50,8 @@ import java.util.Date;
  * @see io.github.carped99.nsso.NetsSsoAuthenticationService
  * @see nets.sso.agent.web.v9.SSOUser
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 public class NetsSsoAuthenticationMockService implements NetsSsoAuthenticationService {
     /** 인증 상세 정보 소스 */

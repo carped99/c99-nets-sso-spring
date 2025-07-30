@@ -39,8 +39,8 @@
  * @see io.github.carped99.nsso.mock.NetsSsoAgentCheckMockService
  * @see io.github.carped99.nsso.mock.NetsSsoAuthenticationMockService
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 @NonNullApi
 package io.github.carped99.nsso.mock;

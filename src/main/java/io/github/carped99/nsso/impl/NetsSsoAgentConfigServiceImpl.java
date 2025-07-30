@@ -30,8 +30,8 @@ import nets.sso.agent.web.v9.SSOAuthn;
  * @see NetsSsoAgentConfigService
  * @see SSOAuthn
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 public class NetsSsoAgentConfigServiceImpl implements NetsSsoAgentConfigService {
     /**

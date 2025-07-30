@@ -40,8 +40,8 @@ import nets.sso.agent.web.v9.SSOStatus;
  * @see SSOMfa
  * @see SSOStatus
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 public class NetsSsoAgentTfaServiceImpl implements NetsSsoAgentTfaService {
     /**

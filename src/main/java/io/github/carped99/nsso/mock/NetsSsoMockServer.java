@@ -55,8 +55,8 @@ import java.util.Map;
  * @see io.github.carped99.nsso.mock.NetsSsoServerLogoutFilter
  * @see io.github.carped99.nsso.mock.NetsSsoServerCheckFilter
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 public class NetsSsoMockServer {
     /** 로그 인스턴스 */

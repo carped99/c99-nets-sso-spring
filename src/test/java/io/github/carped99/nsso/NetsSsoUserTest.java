@@ -15,8 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * NetsSsoUser 인터페이스의 기본 동작 테스트
  *
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 @ExtendWith(MockitoExtension.class)
 class NetsSsoUserTest {

@@ -29,8 +29,8 @@ import jakarta.servlet.http.HttpServletResponse;
  * }
  * }</pre>
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 @FunctionalInterface
 public interface NetsSsoAgentCheckService {

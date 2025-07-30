@@ -34,8 +34,8 @@ import java.util.*;
  * 
  * @see jakarta.servlet.http.HttpServletRequestWrapper
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 final class NetsSsoHttpServletRequestWrapper extends HttpServletRequestWrapper {
     private final Map<String, List<String>> headers = new LinkedCaseInsensitiveMap<>();

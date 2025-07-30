@@ -39,8 +39,8 @@ import java.util.Objects;
  * @see NetsSsoAuthentication
  * @see NetsSsoAuthenticationService
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 public class NetsSsoAuthenticationProvider implements AuthenticationProvider {
     private final UserDetailsService userDetailsService;

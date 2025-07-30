@@ -26,8 +26,8 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
  * @see org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
  * @see NetsSsoAuthentication
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 public class NetsSsoRefreshTokenFilter extends AbstractAuthenticationProcessingFilter {
     /**

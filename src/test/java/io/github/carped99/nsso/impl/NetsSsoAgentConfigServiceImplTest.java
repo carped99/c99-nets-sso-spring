@@ -13,8 +13,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * NetsSsoAgentConfigServiceImpl 클래스의 단위 테스트
  *
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 @ExtendWith(MockitoExtension.class)
 class NetsSsoAgentConfigServiceImplTest {

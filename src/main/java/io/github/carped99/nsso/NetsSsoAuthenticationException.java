@@ -32,8 +32,8 @@ import org.springframework.security.core.AuthenticationException;
  * @see SSOException
  * @see SSOExceptionCode
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 public class NetsSsoAuthenticationException extends AuthenticationException {
     /** NSSO 오류 코드 */

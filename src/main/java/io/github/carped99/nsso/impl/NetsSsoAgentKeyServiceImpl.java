@@ -38,8 +38,8 @@ import nets.sso.agent.web.v9.SSOAuthn;
  * @see SSOAuthn
  * @see SSOException
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 public class NetsSsoAgentKeyServiceImpl implements NetsSsoAgentKeyService {
     /**

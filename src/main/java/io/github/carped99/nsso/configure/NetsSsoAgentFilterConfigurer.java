@@ -35,8 +35,8 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
  * @see NetsSsoAgentFilter
  * @see org.springframework.security.config.annotation.SecurityConfigurerAdapter
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 public class NetsSsoAgentFilterConfigurer<B extends HttpSecurityBuilder<B>> extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, B> {
     private static final String CONFIG_PATH = "/config";

@@ -2,6 +2,7 @@ package io.github.carped99.nsso;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
@@ -33,8 +34,8 @@ import java.util.Collection;
  *     NetsSsoAuthentication.authenticated(principal, authorities);
  * }</pre>
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 public final class NetsSsoAuthentication extends AbstractAuthenticationToken {
     /** 인증 주체 (사용자 정보) */
@@ -54,7 +55,7 @@ public final class NetsSsoAuthentication extends AbstractAuthenticationToken {
      * @return 인증된 상태의 NetsSsoAuthentication 토큰
      * @throws IllegalArgumentException principal 또는 authorities가 null인 경우
      */
-    public static NetsSsoAuthentication authenticated(Object principal, Collection<? extends GrantedAuthority> authorities) {
+    public static NetsSsoAuthentication authenticated(Object principal, @Nullable Collection<? extends GrantedAuthority> authorities) {
         return new NetsSsoAuthentication(principal, authorities);
     }
 
@@ -81,7 +82,7 @@ public final class NetsSsoAuthentication extends AbstractAuthenticationToken {
         this.response = response;
     }
 
-    private NetsSsoAuthentication(Object principal, Collection<? extends GrantedAuthority> authorities) {
+    private NetsSsoAuthentication(Object principal, @Nullable Collection<? extends GrantedAuthority> authorities) {
         super(authorities);
         Assert.notNull(principal, "principal must not be null");
         this.principal = principal;

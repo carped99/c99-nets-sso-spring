@@ -39,8 +39,8 @@ import org.springframework.util.StringUtils;
  * @see SSOStatus
  * @see AuthenticationException
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 final class ExceptionUtil {
     /**

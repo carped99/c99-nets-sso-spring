@@ -41,8 +41,8 @@ import java.util.Objects;
  * @see NetsSsoUser
  * @see org.springframework.security.core.AuthenticatedPrincipal
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 public class NetsSsoUserImpl implements NetsSsoUser {
     private final SSOUser user;

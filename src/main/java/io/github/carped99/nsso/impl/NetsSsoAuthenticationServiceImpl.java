@@ -51,11 +51,11 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
  * }
  * }</pre>
  *
- * @author tykim
+ * @author carped99
  * @see NetsSsoAuthenticationService
  * @see SSOAuthn
  * @see SSOStatus
- * @since 0.0.0
+ * @since 0.0.1
  */
 public class NetsSsoAuthenticationServiceImpl implements NetsSsoAuthenticationService {
     private final Log log = LogFactory.getLog(getClass());

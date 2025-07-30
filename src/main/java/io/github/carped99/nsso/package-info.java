@@ -33,8 +33,8 @@
  * @see io.github.carped99.nsso.NetsSsoAuthenticationService
  * @see io.github.carped99.nsso.configure.NetsSsoAuthenticationConfigurer
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 @NonNullApi
 package io.github.carped99.nsso;

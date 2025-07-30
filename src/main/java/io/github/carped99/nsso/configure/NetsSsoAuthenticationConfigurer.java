@@ -1,7 +1,6 @@
 package io.github.carped99.nsso.configure;
 
 import io.github.carped99.nsso.NetsSsoAuthenticationFilter;
-import io.github.carped99.nsso.NetsSsoLogoutFilter;
 import io.github.carped99.nsso.NetsSsoRefreshTokenFilter;
 import io.github.carped99.nsso.impl.NetsSsoLogoutHandler;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +17,7 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.*;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
@@ -70,8 +70,8 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
  * @see NetsSsoAuthenticationFilter
  * @see NetsSsoRefreshTokenFilter
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder<B>> extends AbstractHttpConfigurer<NetsSsoAuthenticationConfigurer<B>, B> {
     private final Log log = LogFactory.getLog(getClass());
@@ -223,7 +223,7 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
      * @return 현재 컨피규러 인스턴스 (메서드 체이닝 지원)
      */
     public NetsSsoAuthenticationConfigurer<B> mockServer(Customizer<NetsSsoMockServerConfigurer<B>> customizer) {
-        Assert.notNull(customizer, "Customizer cannot be null");
+        Assert.notNull(customizer, "customizer must not be null");
         this.mockServerConfigurer = Objects.requireNonNullElseGet(this.mockServerConfigurer, NetsSsoMockServerConfigurer::new);
         customizer.customize(this.mockServerConfigurer);
         return this;
@@ -263,8 +263,9 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
     private void configureLogoutFilter(B http) {
         String url = normalizePath(this.prefixPath, "/logout");
         this.logoutProcessRequestMatcher = antMatcher(url);
-        var filter = new NetsSsoLogoutFilter(logoutSuccessHandler, new NetsSsoLogoutHandler());
+        var filter = new LogoutFilter(logoutSuccessHandler, new NetsSsoLogoutHandler());
         filter.setLogoutRequestMatcher(logoutProcessRequestMatcher);
+        http.addFilter(filter);
     }
 
 

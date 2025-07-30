@@ -26,8 +26,8 @@
  * @see io.github.carped99.nsso.NetsSsoAgentKeyService
  * @see io.github.carped99.nsso.NetsSsoAgentTfaService
  * 
- * @author tykim
- * @since 0.0.0
+ * @author carped99
+ * @since 0.0.1
  */
 @NonNullApi
 package io.github.carped99.nsso.impl;
