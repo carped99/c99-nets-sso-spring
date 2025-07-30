@@ -8,6 +8,14 @@ import nets.sso.agent.web.v9.SSOAuthn;
 import nets.sso.agent.web.v9.SSOMfa;
 import nets.sso.agent.web.v9.SSOStatus;
 
+/**
+ * NSSO 에이전트 서비스의 기본 구현체
+ *
+ * <p>이 클래스는 NSSO 에이전트와의 통신을 통해 다양한 요청을 처리합니다.</p>
+ *
+ * @author carped99
+ * @since 0.0.1
+ */
 public class NetsSsoAgentServiceImpl implements NetsSsoAgentService {
 
     @Override

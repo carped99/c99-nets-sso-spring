@@ -5,6 +5,17 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Objects;
 
+/**
+ * NSSO 유틸리티 클래스
+ *
+ * <p>주요 기능:</p>
+ * <ul>
+ *   <li>경로 정규화</li>
+ * </ul>
+ *
+ * @author carped99
+ * @since 0.0.1
+ */
 public final class NetsSsoUtils {
     private NetsSsoUtils() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");

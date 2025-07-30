@@ -24,7 +24,11 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
  * @since 0.0.1
  */
 public class NetsSsoMockLogoutHandler implements LogoutHandler {
+    /**
+     * 로그 인스턴스
+     */
     protected final Log log = LogFactory.getLog(getClass());
+
     private final CookieClearingLogoutHandler logoutHandler = new CookieClearingLogoutHandler("nsso-mock-auth");
 
     @Override

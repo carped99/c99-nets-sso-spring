@@ -55,6 +55,12 @@ public class NetsSsoAgentFilter extends OncePerRequestFilter {
     private final RequestMatcher tfaRequestMatcher;
     private final RequestMatcher keyRequestMatcher;
 
+    /**
+     * 생성자
+     *
+     * @param prefixPath NSSO 에이전트 요청의 접두사 경로
+     * @param agentService NSSO 에이전트 서비스 인스턴스
+     */
     public NetsSsoAgentFilter(String prefixPath, NetsSsoAgentService agentService) {
         Assert.notNull(agentService, "agentService must not be null");
         this.agentService = agentService;
@@ -92,6 +98,14 @@ public class NetsSsoAgentFilter extends OncePerRequestFilter {
         response.getWriter().write(result);
     }
 
+    /**
+     * NSSO 에이전트 요청을 처리할 RequestMatcher를 반환합니다.
+     *
+     * <p>이 메서드는 NSSO 에이전트의 다양한 요청 타입에 대한 RequestMatcher를
+     * OrRequestMatcher로 결합하여 반환합니다.</p>
+     *
+     * @return NSSO 에이전트 요청을 처리할 RequestMatcher
+     */
     public RequestMatcher getRequestMatcher() {
         return new OrRequestMatcher(
                 checkRequestMatcher,

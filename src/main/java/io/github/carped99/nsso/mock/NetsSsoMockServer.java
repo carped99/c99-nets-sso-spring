@@ -110,6 +110,7 @@ public class NetsSsoMockServer {
     /**
      * Mock 에이전트 체크 서비스를 생성합니다.
      *
+     * @param prefixPath Mock 에이전트 체크 서비스의 URL 접두사
      * @return Mock 에이전트 체크 서비스
      */
     public NetsSsoAgentService getAgentService(String prefixPath) {

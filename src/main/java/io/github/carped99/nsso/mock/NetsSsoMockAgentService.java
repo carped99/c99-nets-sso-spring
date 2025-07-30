@@ -14,9 +14,22 @@ import java.util.Map;
 
 import static io.github.carped99.nsso.NetsSsoUtils.normalizePath;
 
+/**
+ * NSSO Mock 에이전트 서비스
+ *
+ * <p>이 클래스는 NSSO Mock 서버에서 에이전트 관련 요청을 처리합니다.</p>
+ *
+ * @author carped99
+ * @since 0.0.1
+ */
 public class NetsSsoMockAgentService implements NetsSsoAgentService {
     private final String prefixUrl;
 
+    /**
+     * 생성자
+     *
+     * @param prefixUrl NSSO Mock 서버의 URL 접두사
+     */
     public NetsSsoMockAgentService(String prefixUrl) {
         this.prefixUrl = prefixUrl;
     }

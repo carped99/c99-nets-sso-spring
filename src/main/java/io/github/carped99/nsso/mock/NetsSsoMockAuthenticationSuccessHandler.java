@@ -30,9 +30,17 @@ import java.io.IOException;
  * @since 0.0.1
  */
 public class NetsSsoMockAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+    /**
+     * 로그 인스턴스
+     */
     protected final Log log = LogFactory.getLog(getClass());
     private final AuthenticationSuccessHandler handler;
 
+    /**
+     * 생성자
+     *
+     * @param handler 인증 성공 후 호출할 핸들러
+     */
     public NetsSsoMockAuthenticationSuccessHandler(AuthenticationSuccessHandler handler) {
         this.handler = handler;
     }

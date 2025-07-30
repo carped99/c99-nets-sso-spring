@@ -8,6 +8,15 @@ import nets.sso.agent.web.v9.core.AuthnOperation;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
+/**
+ * NSSO 로그아웃 핸들러
+ *
+ * <p>이 클래스는 NSSO 에이전트와의 로그아웃 처리를 담당합니다.
+ * SSO 인증 객체를 초기화하고 로그아웃 작업을 수행합니다.</p>
+ *
+ * @author carped99
+ * @since 0.0.1
+ */
 public class NetsSsoLogoutHandler implements LogoutHandler {
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {

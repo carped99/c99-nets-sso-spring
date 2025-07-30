@@ -28,6 +28,11 @@ import java.io.IOException;
 public class NetsSsoMockAuthenticationFailureHandler implements AuthenticationFailureHandler {
     private final AuthenticationFailureHandler handler;
 
+    /**
+     * 생성자
+     *
+     * @param handler 인증 실패 핸들러
+     */
     public NetsSsoMockAuthenticationFailureHandler(AuthenticationFailureHandler handler) {
         this.handler = handler;
     }

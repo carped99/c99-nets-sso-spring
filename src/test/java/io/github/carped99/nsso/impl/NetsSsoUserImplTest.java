@@ -1,5 +1,6 @@
 package io.github.carped99.nsso.impl;
 
+import io.github.carped99.nsso.NetsSsoUser;
 import nets.sso.agent.web.v9.SSOUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
