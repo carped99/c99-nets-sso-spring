@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static io.github.carped99.nsso.NetsSsoUtils.normalizePath;
+
 class NetsSsoAgentConfigMockService implements NetsSsoAgentConfigService {
     private final String prefixUrl;
     private final Customizer<Map<String, Object>> customizer;
@@ -38,13 +40,11 @@ class NetsSsoAgentConfigMockService implements NetsSsoAgentConfigService {
 
         String contextPath = request.getContextPath();
 
-        String basePath = contextPath + (prefixUrl.startsWith("/") ? prefixUrl : "/" + prefixUrl);
-
         Map<String, Object> result = new HashMap<>();
-        result.put("ssosite", "localhost");
-        result.put("urlSSOLogonService", basePath + NetsSsoMockServer.LOGON_PATH);
-        result.put("urlSSOLogoffService", basePath + NetsSsoMockServer.LOGOUT_PATH);
-        result.put("urlSSOCheckService", basePath + NetsSsoMockServer.CHECK_PATH);
+        result.put("ssosite", "nets-sso-mock");
+        result.put("urlSSOLogonService", normalizePath(contextPath, prefixUrl, NetsSsoMockServer.LOGON_PATH));
+        result.put("urlSSOLogoffService", normalizePath(contextPath, prefixUrl, NetsSsoMockServer.LOGOUT_PATH));
+        result.put("urlSSOCheckService", normalizePath(contextPath, prefixUrl, NetsSsoMockServer.CHECK_PATH));
         result.put("defaultUrl", uriBuilder.toUriString());
 
         customizer.customize(result);

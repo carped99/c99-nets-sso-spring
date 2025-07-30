@@ -17,7 +17,9 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.*;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
@@ -28,19 +30,20 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import static io.github.carped99.nsso.configure.NetsSsoConfigurerUtils.normalizePath;
+import static io.github.carped99.nsso.NetsSsoUtils.normalizePath;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 /**
  * NSSO 인증 설정의 메인 컨피규러
- * 
+ *
  * <p>이 클래스는 NSSO와 Spring Security의 통합을 위한 메인 설정 클래스입니다.
  * 액세스 토큰 필터, 리프레시 토큰 필터, 에이전트 필터 등을 설정하고
  * 전체적인 NSSO 인증 플로우를 구성합니다.</p>
- * 
+ *
  * <p>주요 기능:</p>
  * <ul>
  *   <li>액세스 토큰 필터 설정</li>
@@ -50,9 +53,9 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
  *   <li>CSRF 설정 관리</li>
  *   <li>인증 성공/실패 핸들러 설정</li>
  * </ul>
- * 
+ *
  * <p>기본 URL 패턴: /nsso/**</p>
- * 
+ *
  * <p>사용 예시:</p>
  * <pre>{@code
  * http
@@ -65,12 +68,11 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
  *         .failureHandler(customFailureHandler)
  *     );
  * }</pre>
- * 
+ *
+ * @author carped99
  * @see org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer
  * @see NetsSsoAuthenticationFilter
  * @see NetsSsoRefreshTokenFilter
- * 
- * @author carped99
  * @since 0.0.1
  */
 public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder<B>> extends AbstractHttpConfigurer<NetsSsoAuthenticationConfigurer<B>, B> {
@@ -82,9 +84,9 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
     private RequestMatcher endpointsMatcher;
 
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource;
-    private AuthenticationSuccessHandler successHandler;
-    private AuthenticationFailureHandler failureHandler;
-    private LogoutSuccessHandler logoutSuccessHandler;
+    private AuthenticationSuccessHandler loginSuccessHandler;
+    private AuthenticationFailureHandler loginFailureHandler;
+    private LogoutSuccessHandler logoutSuccessHandler = new HttpStatusReturningLogoutSuccessHandler();
 
     private final NetsSsoAgentFilterConfigurer<B> agentFilterConfigurer = new NetsSsoAgentFilterConfigurer<>();
     private NetsSsoMockServerConfigurer<B> mockServerConfigurer;
@@ -92,10 +94,11 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
     private RequestMatcher loginProcessRequestMatcher;
     private RequestMatcher logoutProcessRequestMatcher;
     private RequestMatcher requestTokenRequestMatcher;
+    private LogoutHandler[] logoutHandlers;
 
     /**
      * NSSO 인증 설정 컨피규러의 새 인스턴스를 생성합니다.
-     * 
+     *
      * @param <T> HttpSecurityBuilder 타입
      * @return 새로운 NetsSsoAuthenticationConfigurer 인스턴스
      */
@@ -122,7 +125,7 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
      *                 );
      *     }
      * </pre>
-     * 
+     *
      * @param http HttpSecurity 인스턴스
      * @return 설정된 NetsSsoAuthenticationConfigurer
      * @throws Exception 설정 중 오류 발생 시
@@ -149,7 +152,7 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
 
     /**
      * 엔드포인트 매처를 반환한다.
-     * 
+     *
      * @return 모든 NSSO 엔드포인트를 매칭하는 RequestMatcher
      */
     public RequestMatcher getEndpointsMatcher() {
@@ -158,9 +161,9 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
 
     /**
      * CSRF 보호를 무시할지 설정한다.
-     * 
+     *
      * @param ignoreCsrf CSRF 보호 무시 여부
-     * @return 현재 컨피규러 인스턴스 (메서드 체이닝 지원)
+     * @return 현재 컨피규러 인스턴스
      */
     public NetsSsoAuthenticationConfigurer<B> ignoreCsrf(boolean ignoreCsrf) {
         this.ignoreCsrf = true;
@@ -172,7 +175,7 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
      * 기본값은 "/nsso"입니다.
      *
      * @param prefixUrl NSSO 인증 엔드포인트의 URL 접두사
-     * @return 현재 컨피규러 인스턴스 (메서드 체이닝 지원)
+     * @return 현재 컨피규러 인스턴스
      */
     public NetsSsoAuthenticationConfigurer<B> prefixUrl(String prefixUrl) {
         this.prefixPath = prefixUrl;
@@ -181,25 +184,25 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
 
     /**
      * 인증 성공 핸들러를 설정한다.
-     * 
-     * @param successHandler 인증 성공 핸들러
-     * @return 현재 컨피규러 인스턴스 (메서드 체이닝 지원)
+     *
+     * @param loginSuccessHandler 인증 성공 핸들러
+     * @return 현재 컨피규러 인스턴스
      */
-    public NetsSsoAuthenticationConfigurer<B> successHandler(AuthenticationSuccessHandler successHandler) {
-        Assert.notNull(successHandler, "successHandler must not be null");
-        this.successHandler = successHandler;
+    public NetsSsoAuthenticationConfigurer<B> loginSuccessHandler(AuthenticationSuccessHandler loginSuccessHandler) {
+        Assert.notNull(loginSuccessHandler, "loginSuccessHandler must not be null");
+        this.loginSuccessHandler = loginSuccessHandler;
         return this;
     }
 
     /**
      * 인증 실패 핸들러를 설정한다.
-     * 
-     * @param failureHandler 인증 실패 핸들러
-     * @return 현재 컨피규러 인스턴스 (메서드 체이닝 지원)
+     *
+     * @param loginFailureHandler 인증 실패 핸들러
+     * @return 현재 컨피규러 인스턴스
      */
-    public NetsSsoAuthenticationConfigurer<B> failureHandler(AuthenticationFailureHandler failureHandler) {
-        Assert.notNull(failureHandler, "failureHandler must not be null");
-        this.failureHandler = failureHandler;
+    public NetsSsoAuthenticationConfigurer<B> loginFailureHandler(AuthenticationFailureHandler loginFailureHandler) {
+        Assert.notNull(loginFailureHandler, "loginFailureHandler must not be null");
+        this.loginFailureHandler = loginFailureHandler;
         return this;
     }
 
@@ -207,7 +210,7 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
      * 로그아웃 성공 핸들러를 설정한다.
      *
      * @param logoutSuccessHandler 인증 실패 핸들러
-     * @return 현재 컨피규러 인스턴스 (메서드 체이닝 지원)
+     * @return 현재 컨피규러 인스턴스
      */
     public NetsSsoAuthenticationConfigurer<B> logoutSuccessHandler(LogoutSuccessHandler logoutSuccessHandler) {
         Assert.notNull(logoutSuccessHandler, "logoutSuccessHandler must not be null");
@@ -215,12 +218,24 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
         return this;
     }
 
+    /**
+     * 로그아웃 핸들러를 설정한다.
+     *
+     * @param logoutHandlers 로그아웃 핸들러 배열
+     * @return 현재 컨피규러 인스턴스
+     */
+    public NetsSsoAuthenticationConfigurer<B> logoutHandler(LogoutHandler... logoutHandlers) {
+        Assert.notNull(logoutHandlers, "logoutHandlers must not be null");
+        Assert.noNullElements(logoutHandlers, "logoutHandlers must not contain null elements");
+        this.logoutHandlers = logoutHandlers;
+        return this;
+    }
 
     /**
      * Mock 서버를 커스터마이징한다.
-     * 
+     *
      * @param customizer Mock 서버 커스터마이저
-     * @return 현재 컨피규러 인스턴스 (메서드 체이닝 지원)
+     * @return 현재 컨피규러 인스턴스
      */
     public NetsSsoAuthenticationConfigurer<B> mockServer(Customizer<NetsSsoMockServerConfigurer<B>> customizer) {
         Assert.notNull(customizer, "customizer must not be null");
@@ -263,11 +278,21 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
     private void configureLogoutFilter(B http) {
         String url = normalizePath(this.prefixPath, "/logout");
         this.logoutProcessRequestMatcher = antMatcher(url);
-        var filter = new LogoutFilter(logoutSuccessHandler, new NetsSsoLogoutHandler());
-        filter.setLogoutRequestMatcher(logoutProcessRequestMatcher);
+        var handlers = getLogoutHandlers();
+        var filter = new LogoutFilter(this.logoutSuccessHandler, handlers);
+        filter.setLogoutRequestMatcher(this.logoutProcessRequestMatcher);
         http.addFilter(filter);
     }
 
+    private LogoutHandler[] getLogoutHandlers() {
+        List<LogoutHandler> handlers = new ArrayList<>();
+        // 기본 로그아웃 핸들러 추가
+        handlers.add(new NetsSsoLogoutHandler());
+        if (this.logoutHandlers != null) {
+            handlers.addAll(Arrays.asList(this.logoutHandlers));
+        }
+        return handlers.toArray(new LogoutHandler[0]);
+    }
 
     private void configureRefreshTokenFilter(B http) {
         String url = normalizePath(this.prefixPath, "/refresh_token");
@@ -278,8 +303,8 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
 
     private void configureAuthenticationProcessingFilter(B http, AbstractAuthenticationProcessingFilter filter) {
         filter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class));
-        filter.setAuthenticationSuccessHandler(getSuccessHandler(http));
-        filter.setAuthenticationFailureHandler(getFailureHandler(http));
+        filter.setAuthenticationSuccessHandler(getSuccessHandler());
+        filter.setAuthenticationFailureHandler(getFailureHandler());
         if (this.authenticationDetailsSource != null) {
             filter.setAuthenticationDetailsSource(this.authenticationDetailsSource);
         }
@@ -306,7 +331,7 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
 
         this.endpointsMatcher = new OrRequestMatcher(requestMatchers);
 
-        log.debug("NetsSsoAuthentication endpoints:  " +  this.endpointsMatcher);
+        log.debug("NetsSsoAuthentication endpoints:  " + this.endpointsMatcher);
     }
 
     @SuppressWarnings("unchecked")
@@ -323,9 +348,9 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
     /**
      * 인증 상세 정보 소스를 설정한다.
      * 기본값은 WebAuthenticationDetailsSource다.
-     * 
+     *
      * @param authenticationDetailsSource 인증 상세 정보 소스
-     * @return 현재 컨피규러 인스턴스 (메서드 체이닝 지원)
+     * @return 현재 컨피규러 인스턴스
      */
     public NetsSsoAuthenticationConfigurer<B> authenticationDetailsSource(AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource) {
         this.authenticationDetailsSource = authenticationDetailsSource;
@@ -337,17 +362,24 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
         return Objects.requireNonNullElseGet(repository, HttpSessionSecurityContextRepository::new);
     }
 
-    private AuthenticationSuccessHandler getSuccessHandler(B builder) {
-        if (this.successHandler == null) {
-            this.successHandler = new SimpleUrlAuthenticationSuccessHandler();
+    private AuthenticationSuccessHandler getSuccessHandler() {
+        if (this.loginSuccessHandler == null) {
+            this.loginSuccessHandler = new SimpleUrlAuthenticationSuccessHandler();
         }
-        return this.successHandler;
+
+        if (this.mockServerConfigurer != null && this.mockServerConfigurer.isEnabled()) {
+            this.loginSuccessHandler = this.mockServerConfigurer.getSuccessHandler(this.loginSuccessHandler);
+        }
+
+        return this.loginSuccessHandler;
     }
 
-    private AuthenticationFailureHandler getFailureHandler(B builder) {
-        if (this.failureHandler == null) {
-            this.failureHandler = new SimpleUrlAuthenticationFailureHandler("/login?error");
+    private AuthenticationFailureHandler getFailureHandler() {
+        if (this.loginFailureHandler == null) {
+            this.loginFailureHandler = new SimpleUrlAuthenticationFailureHandler("/login?error");
         }
-        return this.failureHandler;
+        return this.loginFailureHandler;
     }
 }
+
+

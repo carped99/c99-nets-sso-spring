@@ -11,6 +11,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.util.List;
 
+import static io.github.carped99.nsso.NetsSsoUtils.normalizePath;
 import static io.github.carped99.nsso.configure.NetsSsoConfigurerUtils.*;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 

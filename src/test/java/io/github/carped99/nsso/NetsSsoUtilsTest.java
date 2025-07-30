@@ -1,9 +1,10 @@
-package io.github.carped99.nsso.configure;
+package io.github.carped99.nsso;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static io.github.carped99.nsso.NetsSsoUtils.normalizePath;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -14,12 +15,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * @since 0.0.1
  */
 @ExtendWith(MockitoExtension.class)
-class NetsSsoConfigurerUtilsTest {
+class NetsSsoUtilsTest {
 
     @Test
     void normalizePath_WithEmpty() {
         // when
-        String result = NetsSsoConfigurerUtils.normalizePath();
+        String result = normalizePath();
 
         // then
         assertThat(result).isEqualTo("/");
@@ -32,7 +33,7 @@ class NetsSsoConfigurerUtilsTest {
         String suffix = "/check";
 
         // when
-        String result = NetsSsoConfigurerUtils.normalizePath(prefix, suffix);
+        String result = normalizePath(prefix, suffix);
 
         // then
         assertThat(result).isEqualTo("/nsso/check");
@@ -45,7 +46,7 @@ class NetsSsoConfigurerUtilsTest {
         String suffix = "/check/";
 
         // when
-        String result = NetsSsoConfigurerUtils.normalizePath(prefix, suffix);
+        String result = normalizePath(prefix, suffix);
 
         // then
         assertThat(result).isEqualTo("/nsso/check");
@@ -58,7 +59,7 @@ class NetsSsoConfigurerUtilsTest {
         String suffix = "";
 
         // when
-        String result = NetsSsoConfigurerUtils.normalizePath(prefix, suffix);
+        String result = normalizePath(prefix, suffix);
 
         // then
         assertThat(result).isEqualTo("/nsso");
@@ -71,7 +72,7 @@ class NetsSsoConfigurerUtilsTest {
         String suffix = "/agent/check";
 
         // when
-        String result = NetsSsoConfigurerUtils.normalizePath(prefix, suffix);
+        String result = normalizePath(prefix, suffix);
 
         // then
         assertThat(result).isEqualTo("/api/v1/nsso/agent/check");
@@ -84,7 +85,7 @@ class NetsSsoConfigurerUtilsTest {
         String suffix = "check";
 
         // when
-        String result = NetsSsoConfigurerUtils.normalizePath(prefix, suffix);
+        String result = normalizePath(prefix, suffix);
 
         // then
         assertThat(result).isEqualTo("/check");
@@ -97,7 +98,7 @@ class NetsSsoConfigurerUtilsTest {
         String suffix = "///check";
 
         // when
-        String result = NetsSsoConfigurerUtils.normalizePath(prefix, suffix);
+        String result = normalizePath(prefix, suffix);
 
         // then
         assertThat(result).isEqualTo("/nsso/check");

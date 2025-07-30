@@ -10,8 +10,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -36,13 +34,12 @@ import java.util.function.Supplier;
  * NetsSsoAgentCheckService service = NetsSsoConfigurerUtils.getAgentCheckService(httpSecurity);
  * }</pre>
  *
+ * @author carped99
  * @see NetsSsoAgentCheckService
  * @see NetsSsoAgentConfigService
  * @see NetsSsoAgentDuplicateService
  * @see NetsSsoAgentTfaService
  * @see NetsSsoAgentKeyService
- *
- * @author carped99
  * @since 0.0.1
  */
 final class NetsSsoConfigurerUtils {
@@ -53,24 +50,7 @@ final class NetsSsoConfigurerUtils {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
 
-    /**
-     * 접두사와 접미사를 결합하여 정규화된 경로를 생성합니다.
-     *
-     * <p>UriComponentsBuilder를 사용하여 경로를 정규화하고 결합합니다.</p>
-     *
-     * @param segments 경로
-     * @return 정규화된 경로
-     * @throws IllegalArgumentException 경로가 null인 경우
-     */
-    public static String normalizePath(String... segments) {
-        String[] tokens = StringUtils.tokenizeToStringArray(String.join("/", segments), "/");
-        var path = UriComponentsBuilder.fromPath("/")
-                .pathSegment(tokens)
-                .build()
-                .normalize()
-                .getPath();
-        return Objects.requireNonNull(path);
-    }
+
 
     /**
      * HttpSecurity 빌더에서 에이전트 체크 서비스를 조회하거나 생성합니다.
@@ -148,9 +128,9 @@ final class NetsSsoConfigurerUtils {
      *
      * <p>먼저 SharedObject에서 조회하고, 없으면 ApplicationContext에서 조회합니다.</p>
      *
-     * @param http HttpSecurity 빌더
+     * @param http  HttpSecurity 빌더
      * @param clazz 조회할 빈 타입
-     * @param <C> 빈 타입
+     * @param <C>   빈 타입
      * @return 빈 인스턴스 (없으면 null)
      */
     @Nullable
@@ -167,10 +147,10 @@ final class NetsSsoConfigurerUtils {
      * <p>먼저 SharedObject에서 조회하고, 없으면 ApplicationContext에서 조회하며,
      * 둘 다 없으면 supplier를 사용하여 새 인스턴스를 생성합니다.</p>
      *
-     * @param http HttpSecurity 빌더
-     * @param clazz 조회할 빈 타입
+     * @param http     HttpSecurity 빌더
+     * @param clazz    조회할 빈 타입
      * @param supplier 빈 생성 공급자
-     * @param <C> 빈 타입
+     * @param <C>      빈 타입
      * @return 빈 인스턴스
      */
     public static <C> C getBean(HttpSecurityBuilder<?> http, Class<C> clazz, Supplier<C> supplier) {

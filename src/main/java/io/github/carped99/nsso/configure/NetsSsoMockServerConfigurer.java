@@ -4,8 +4,8 @@ import io.github.carped99.nsso.NetsSsoAgentCheckService;
 import io.github.carped99.nsso.NetsSsoAgentConfigService;
 import io.github.carped99.nsso.NetsSsoAuthenticationService;
 import io.github.carped99.nsso.mock.NetsSsoAuthenticationMockService;
+import io.github.carped99.nsso.mock.NetsSsoMockAuthenticationSuccessHandler;
 import io.github.carped99.nsso.mock.NetsSsoMockServer;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.DefaultSecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 
@@ -64,6 +65,7 @@ import java.util.Map;
  */
 public class NetsSsoMockServerConfigurer<B extends HttpSecurityBuilder<B>> extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, B> {
     private final Log log = LogFactory.getLog(getClass());
+    private boolean enabled = false;
     private String[] profiles;
     private String prefixPath;
     private NetsSsoMockServer mockServer;
@@ -76,7 +78,8 @@ public class NetsSsoMockServerConfigurer<B extends HttpSecurityBuilder<B>> exten
     @Override
     public void configure(B builder) throws Exception {
         Environment environment = builder.getSharedObject(ApplicationContext.class).getEnvironment();
-        if (!isEnabled(environment)) {
+        this.enabled = isEnabled(environment);
+        if (!this.enabled) {
             log.debug("NSSO Mock Server is not enabled");
             return;
         }
@@ -141,6 +144,10 @@ public class NetsSsoMockServerConfigurer<B extends HttpSecurityBuilder<B>> exten
         return environment.matchesProfiles(profiles);
     }
 
+    boolean isEnabled() {
+        return this.enabled;
+    }
+
     RequestMatcher getRequestMatcher() {
         if (this.mockServer == null) {
             return (request) -> false;
@@ -150,5 +157,10 @@ public class NetsSsoMockServerConfigurer<B extends HttpSecurityBuilder<B>> exten
 
     void setPrefixPath(String prefixPath) {
         this.prefixPath = prefixPath;
+    }
+
+    AuthenticationSuccessHandler getSuccessHandler(AuthenticationSuccessHandler successHandler) {
+        Assert.notNull(successHandler, "successHandler must not be null");
+        return new NetsSsoMockAuthenticationSuccessHandler(successHandler);
     }
 }
