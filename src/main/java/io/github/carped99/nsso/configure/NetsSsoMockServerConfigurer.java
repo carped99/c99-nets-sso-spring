@@ -2,15 +2,12 @@ package io.github.carped99.nsso.configure;
 
 import io.github.carped99.nsso.NetsSsoAgentService;
 import io.github.carped99.nsso.NetsSsoAuthenticationService;
+import io.github.carped99.nsso.mock.NetsSsoMockAgentService;
 import io.github.carped99.nsso.mock.NetsSsoMockAuthenticationService;
 import io.github.carped99.nsso.mock.NetsSsoMockAuthenticationSuccessHandler;
 import io.github.carped99.nsso.mock.NetsSsoMockServer;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
-import org.springframework.lang.Nullable;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,7 +16,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 
-import java.util.Map;
+import static io.github.carped99.nsso.NetsSsoUtils.normalizePath;
 
 /**
  * NSSO Mock 서버 설정 컨피규러
@@ -63,39 +60,34 @@ import java.util.Map;
  * @since 0.0.1
  */
 public class NetsSsoMockServerConfigurer<B extends HttpSecurityBuilder<B>> extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, B> {
-    private final Log log = LogFactory.getLog(getClass());
     private boolean enabled = false;
     private String[] profiles;
     private String prefixPath;
     private NetsSsoMockServer mockServer;
-
-    @Nullable
-    private Customizer<Map<String, Object>> checkCustomizer;
-    @Nullable
-    private Customizer<Map<String, Object>> configCustomizer;
 
     @Override
     public void configure(B builder) throws Exception {
         Environment environment = builder.getSharedObject(ApplicationContext.class).getEnvironment();
         this.enabled = isEnabled(environment);
         if (!this.enabled) {
-            log.debug("NSSO Mock Server is not enabled");
             return;
         }
 
-        String prefixUrl = prefixPath + "/server";
-        this.mockServer = NetsSsoConfigurerUtils.getMockServer(builder)
-                .setPrefixUrl(prefixUrl);
+        String serverPath = normalizePath(prefixPath, "/server");
 
-        UserDetailsService userDetailsService = NetsSsoConfigurerUtils.getUserDetailsService(builder);
-        if (userDetailsService != null) {
-            this.mockServer.setUserDetailsService(userDetailsService);
+        this.mockServer = NetsSsoConfigurerUtils.getBean(builder, NetsSsoMockServer.class, NetsSsoMockServer::new)
+                .setPrefixPath(serverPath);
+
+        UserDetailsService userDetailsService = NetsSsoConfigurerUtils.getBean(builder, UserDetailsService.class);
+        if (userDetailsService == null) {
+            throw new IllegalStateException("UserDetailsService required");
         }
+        this.mockServer.setUserDetailsService(userDetailsService);
         this.mockServer.configure(builder);
 
         // Bean 등록
         NetsSsoConfigurerUtils.getBean(builder, NetsSsoAuthenticationService.class, NetsSsoMockAuthenticationService::new);
-        NetsSsoConfigurerUtils.getBean(builder, NetsSsoAgentService.class, () -> mockServer.getAgentService(prefixPath));
+        NetsSsoConfigurerUtils.getBean(builder, NetsSsoAgentService.class, () -> new NetsSsoMockAgentService(serverPath));
     }
 
     /**
@@ -106,32 +98,6 @@ public class NetsSsoMockServerConfigurer<B extends HttpSecurityBuilder<B>> exten
      */
     public NetsSsoMockServerConfigurer<B> profiles(String... profiles) {
         this.profiles = profiles;
-        return this;
-    }
-
-    /**
-     * 체크 서비스 응답 데이터 커스터마이저를 설정합니다.
-     *
-     * @param customizer 체크 서비스 커스터마이저
-     * @return 현재 컨피규러 인스턴스 (메서드 체이닝 지원)
-     * @throws IllegalArgumentException customizer가 null인 경우
-     */
-    public NetsSsoMockServerConfigurer<B> checkCustomizer(Customizer<Map<String, Object>> customizer) {
-        Assert.notNull(customizer, "Customizer must not be null");
-        this.checkCustomizer = customizer;
-        return this;
-    }
-
-    /**
-     * 설정 서비스 응답 데이터 커스터마이저를 설정합니다.
-     *
-     * @param customizer 설정 서비스 커스터마이저
-     * @return 현재 컨피규러 인스턴스 (메서드 체이닝 지원)
-     * @throws IllegalArgumentException customizer가 null인 경우
-     */
-    public NetsSsoMockServerConfigurer<B> configCustomizer(Customizer<Map<String, Object>> customizer) {
-        Assert.notNull(customizer, "Customizer must not be null");
-        this.configCustomizer = customizer;
         return this;
     }
 

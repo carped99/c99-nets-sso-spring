@@ -2,13 +2,14 @@ package io.github.carped99.nsso.configure;
 
 import io.github.carped99.nsso.NetsSsoAgentFilter;
 import io.github.carped99.nsso.NetsSsoAgentService;
+import io.github.carped99.nsso.impl.NetsSsoAgentServiceImpl;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import static io.github.carped99.nsso.configure.NetsSsoConfigurerUtils.getAgentService;
+import static io.github.carped99.nsso.configure.NetsSsoConfigurerUtils.getBean;
 
 /**
  * NSSO 에이전트 필터 설정 클래스
@@ -54,7 +55,7 @@ public class NetsSsoAgentFilterConfigurer<B extends HttpSecurityBuilder<B>> exte
      */
     @Override
     public void configure(B builder) throws Exception {
-        NetsSsoAgentService agentService = getAgentService(builder);
+        NetsSsoAgentService agentService = getBean(builder, NetsSsoAgentService.class, NetsSsoAgentServiceImpl::new);
         var agentFilter = new NetsSsoAgentFilter(prefixPath, agentService);
         this.requsetMatcher = agentFilter.getRequestMatcher();
         builder.addFilterAfter(postProcess(agentFilter), CsrfFilter.class);

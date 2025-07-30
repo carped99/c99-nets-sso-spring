@@ -1,12 +1,8 @@
 package io.github.carped99.nsso.configure;
 
-import io.github.carped99.nsso.*;
-import io.github.carped99.nsso.impl.*;
-import io.github.carped99.nsso.mock.NetsSsoMockServer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
-import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -42,38 +38,6 @@ final class NetsSsoConfigurerUtils {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
 
-
-    /**
-     * HttpSecurity 빌더에서 에이전트 체크 서비스를 조회하거나 생성합니다.
-     *
-     * @param httpSecurity HttpSecurity 빌더
-     * @return 에이전트 체크 서비스 인스턴스
-     */
-    public static NetsSsoAgentService getAgentService(HttpSecurityBuilder<?> httpSecurity) {
-        return getBean(httpSecurity, NetsSsoAgentService.class, NetsSsoAgentServiceImpl::new);
-    }
-
-    /**
-     * HttpSecurity 빌더에서 Mock 서버를 조회하거나 생성합니다.
-     *
-     * @param httpSecurity HttpSecurity 빌더
-     * @return Mock 서버 인스턴스
-     */
-    public static NetsSsoMockServer getMockServer(HttpSecurityBuilder<?> httpSecurity) {
-        return getBean(httpSecurity, NetsSsoMockServer.class, NetsSsoMockServer::new);
-    }
-
-    /**
-     * HttpSecurity 빌더에서 UserDetailsService를 조회합니다.
-     *
-     * @param httpSecurity HttpSecurity 빌더
-     * @return UserDetailsService 인스턴스 (없으면 null)
-     */
-    @Nullable
-    public static UserDetailsService getUserDetailsService(HttpSecurityBuilder<?> httpSecurity) {
-        return getBean(httpSecurity, UserDetailsService.class);
-    }
-
     /**
      * HttpSecurity 빌더에서 지정된 타입의 빈을 조회합니다.
      *
@@ -85,7 +49,7 @@ final class NetsSsoConfigurerUtils {
      * @return 빈 인스턴스 (없으면 null)
      */
     @Nullable
-    private static <C> C getBean(HttpSecurityBuilder<?> http, Class<C> clazz) {
+    public static <C> C getBean(HttpSecurityBuilder<?> http, Class<C> clazz) {
         return Optional.ofNullable(http.getSharedObject(clazz)).orElseGet(() -> {
             var provider = http.getSharedObject(ApplicationContext.class).getBeanProvider(clazz);
             return provider.getIfUnique();

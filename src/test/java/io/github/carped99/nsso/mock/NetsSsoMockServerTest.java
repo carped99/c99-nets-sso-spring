@@ -43,12 +43,12 @@ class NetsSsoMockServerTest {
     }
 
     @Test
-    void setPrefixUrl_ShouldSetPrefixUrl() {
+    void setPrefixUrl_ShouldSetPrefixPath() {
         // given
         String prefixUrl = "/test/nsso";
 
         // when
-        NetsSsoMockServer result = mockServer.setPrefixUrl(prefixUrl);
+        NetsSsoMockServer result = mockServer.setPrefixPath(prefixUrl);
 
         // then
         assertThat(result).isEqualTo(mockServer);
@@ -67,7 +67,7 @@ class NetsSsoMockServerTest {
     void configure_ShouldAddFiltersToHttpSecurity() {
         // given
         String prefixUrl = "/nsso";
-        mockServer.setPrefixUrl(prefixUrl);
+        mockServer.setPrefixPath(prefixUrl);
         mockServer.setUserDetailsService(userDetailsService);
 
         // when
@@ -83,7 +83,7 @@ class NetsSsoMockServerTest {
     void getRequestMatcher_ShouldReturnRequestMatcher() {
         // given
         String prefixUrl = "/nsso";
-        mockServer.setPrefixUrl(prefixUrl);
+        mockServer.setPrefixPath(prefixUrl);
         mockServer.configure(httpSecurityBuilder);
 
         // when
@@ -100,7 +100,7 @@ class NetsSsoMockServerTest {
 
         // when
         NetsSsoMockServer configuredServer = mockServer
-                .setPrefixUrl(prefixUrl)
+                .setPrefixPath(prefixUrl)
                 .setUserDetailsService(userDetailsService);
 
         // then

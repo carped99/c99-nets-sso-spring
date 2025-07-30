@@ -322,7 +322,7 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
 
         this.endpointsMatcher = new OrRequestMatcher(requestMatchers);
 
-        log.debug("NetsSsoAuthentication endpoints:  " + this.endpointsMatcher);
+        log.info("NetsSsoAuthentication endpoints:  " + this.endpointsMatcher);
     }
 
     private LogoutHandler[] getLogoutHandlers() {
