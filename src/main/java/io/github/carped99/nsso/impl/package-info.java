@@ -20,12 +20,7 @@
  * 
  * @see io.github.carped99.nsso.NetsSsoAuthenticationService
  * @see io.github.carped99.nsso.NetsSsoUser
- * @see io.github.carped99.nsso.NetsSsoAgentCheckService
- * @see io.github.carped99.nsso.NetsSsoAgentConfigService
- * @see io.github.carped99.nsso.NetsSsoAgentDuplicateService
- * @see io.github.carped99.nsso.NetsSsoAgentKeyService
- * @see io.github.carped99.nsso.NetsSsoAgentTfaService
- * 
+ *
  * @author carped99
  * @since 0.0.1
  */

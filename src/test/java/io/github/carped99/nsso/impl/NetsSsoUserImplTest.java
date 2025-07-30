@@ -1,6 +1,5 @@
 package io.github.carped99.nsso.impl;
 
-import io.github.carped99.nsso.NetsSsoUser;
 import nets.sso.agent.web.v9.SSOUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +54,7 @@ class NetsSsoUserImplTest {
         when(ssoUser.getAttrs()).thenReturn(userAttributes);
 
         // when
-        NetsSsoUserImpl userImpl = new NetsSsoUserImpl(ssoUser, authorities);
+        NetsSsoUser userImpl = new NetsSsoUser(ssoUser, authorities);
 
         // then
         assertThat(userImpl).isNotNull();
@@ -67,7 +66,7 @@ class NetsSsoUserImplTest {
     @Test
     void constructor_WithNullUser_ShouldThrowException() {
         // when & then
-        assertThatThrownBy(() -> new NetsSsoUserImpl(null, authorities))
+        assertThatThrownBy(() -> new NetsSsoUser(null, authorities))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("user must not be null");
     }
@@ -78,7 +77,7 @@ class NetsSsoUserImplTest {
         when(ssoUser.getAttrs()).thenReturn(userAttributes);
 
         // when
-        NetsSsoUserImpl userImpl = new NetsSsoUserImpl(ssoUser, null);
+        NetsSsoUser userImpl = new NetsSsoUser(ssoUser, null);
 
         // then
         assertThat(userImpl).isNotNull();
@@ -91,7 +90,7 @@ class NetsSsoUserImplTest {
         when(ssoUser.getUserID()).thenReturn("testUser123");
         when(ssoUser.getAttrs()).thenReturn(userAttributes);
 
-        NetsSsoUserImpl userImpl = new NetsSsoUserImpl(ssoUser, authorities);
+        NetsSsoUser userImpl = new NetsSsoUser(ssoUser, authorities);
 
         // when
         String name = userImpl.getName();
@@ -103,16 +102,16 @@ class NetsSsoUserImplTest {
     @Test
     void userImpl_ShouldBeInstanceOfNetsSsoUser() {
         // when
-        NetsSsoUserImpl userImpl = new NetsSsoUserImpl(ssoUser, authorities);
+        NetsSsoUser userImpl = new NetsSsoUser(ssoUser, authorities);
 
         // then
-        assertThat(userImpl).isInstanceOf(NetsSsoUser.class);
+        assertThat(userImpl).isInstanceOf(io.github.carped99.nsso.NetsSsoUser.class);
     }
 
     @Test
     void userImpl_ShouldBeInstanceOfAuthenticatedPrincipal() {
         // when
-        NetsSsoUserImpl userImpl = new NetsSsoUserImpl(ssoUser, authorities);
+        NetsSsoUser userImpl = new NetsSsoUser(ssoUser, authorities);
 
         // then
         assertThat(userImpl).isInstanceOf(AuthenticatedPrincipal.class);

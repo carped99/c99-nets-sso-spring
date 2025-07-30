@@ -22,8 +22,6 @@ import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.UUID;
 
 class NetsSsoServerLogonFilter extends OncePerRequestFilter {
@@ -65,7 +63,9 @@ class NetsSsoServerLogonFilter extends OncePerRequestFilter {
 
     private NetsSsoServerLogonResponse getSuccessResponse(UserDetails userDetails) {
         String username = userDetails.getUsername();
-        String ssoResponse = Base64.getEncoder().encodeToString(username.getBytes(StandardCharsets.UTF_8));
+
+        // 사용자 정보를 ssoResponse로 전달
+        String ssoResponse = ConverterUtils.encodeUsername(username);
 
         // 인증된 username 값을 ssoResponse 값으로 반환
         return NetsSsoServerLogonResponse.builder()
@@ -109,5 +109,9 @@ class NetsSsoServerLogonFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         return !requestMatcher.matches(request);
+    }
+
+    RequestMatcher getRequestMatcher() {
+        return requestMatcher;
     }
 }

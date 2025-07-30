@@ -3,6 +3,7 @@ package io.github.carped99.nsso.configure;
 import io.github.carped99.nsso.NetsSsoAuthenticationFilter;
 import io.github.carped99.nsso.NetsSsoRefreshTokenFilter;
 import io.github.carped99.nsso.impl.NetsSsoLogoutHandler;
+import io.github.carped99.nsso.mock.NetsSsoMockLogoutHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -286,8 +287,14 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
 
     private LogoutHandler[] getLogoutHandlers() {
         List<LogoutHandler> handlers = new ArrayList<>();
+
         // 기본 로그아웃 핸들러 추가
-        handlers.add(new NetsSsoLogoutHandler());
+        if (this.mockServerConfigurer != null && this.mockServerConfigurer.isEnabled()) {
+            handlers.add(new NetsSsoMockLogoutHandler());
+        } else {
+            handlers.add(new NetsSsoLogoutHandler());
+        }
+
         if (this.logoutHandlers != null) {
             handlers.addAll(Arrays.asList(this.logoutHandlers));
         }
@@ -325,7 +332,7 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
         requestMatchers.add(this.requestTokenRequestMatcher);
         requestMatchers.add(this.agentFilterConfigurer.getRequestMatcher());
 
-        if (this.mockServerConfigurer != null) {
+        if (this.mockServerConfigurer != null && this.mockServerConfigurer.isEnabled()) {
             requestMatchers.add(this.mockServerConfigurer.getRequestMatcher());
         }
 

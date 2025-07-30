@@ -32,4 +32,8 @@ class NetsSsoServerLogoutFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         return !requestMatcher.matches(request);
     }
+
+    RequestMatcher getRequestMatcher() {
+        return requestMatcher;
+    }
 }

@@ -3,7 +3,6 @@ package io.github.carped99.nsso.mock;
 import io.github.carped99.nsso.NetsSsoAuthentication;
 import io.github.carped99.nsso.NetsSsoAuthenticationService;
 import io.github.carped99.nsso.NetsSsoUser;
-import io.github.carped99.nsso.impl.NetsSsoUserImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import nets.sso.agent.web.common.constant.SSOConst;
 import nets.sso.agent.web.v9.SSOUser;
@@ -14,7 +13,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 
-import java.util.Base64;
 import java.util.Date;
 
 /**
@@ -52,7 +50,7 @@ import java.util.Date;
  * @see nets.sso.agent.web.v9.SSOUser
  * @since 0.0.1
  */
-public class NetsSsoAuthenticationMockService implements NetsSsoAuthenticationService {
+public class NetsSsoMockAuthenticationService implements NetsSsoAuthenticationService {
     /**
      * 인증 상세 정보 소스
      */
@@ -77,49 +75,21 @@ public class NetsSsoAuthenticationMockService implements NetsSsoAuthenticationSe
         // 사용자 검증
         SSOUser ssoUser = findUser(username, request);
 
-        NetsSsoUser principal = new NetsSsoUserImpl(ssoUser, AuthorityUtils.NO_AUTHORITIES);
+        NetsSsoUser principal = new NetsSsoUser(ssoUser, AuthorityUtils.NO_AUTHORITIES);
         var authenticated = NetsSsoAuthentication.authenticated(principal, principal.getAuthorities());
         authenticated.setDetails(new WebAuthenticationDetails(request));
         return authenticated;
     }
 
-    /**
-     * 요청에서 사용자명을 추출합니다.
-     *
-     * <p>다음 순서로 사용자명을 추출합니다:</p>
-     * <ol>
-     *   <li>username 파라미터 (테스트용)</li>
-     *   <li>ssoResponse 파라미터 (Base64 디코딩)</li>
-     *   <li>빈 문자열</li>
-     * </ol>
-     *
-     * @param request HTTP 요청 객체
-     * @return 추출된 사용자명
-     */
     private String obtainUsername(HttpServletRequest request) {
-        // 테스트 용도로 사용자의 이름을 받는다.
-        String username = request.getParameter("username");
-        if (StringUtils.hasText(username)) {
-            return username;
-        }
-
+        // MOCK 테스트에서는 ssoResponse 파라미터를 사용하여 사용자 이름을 추출
         String ssoResponse = request.getParameter(SSOConst.SSO_RESPONSE);
         if (StringUtils.hasText(ssoResponse)) {
-            return new String(Base64.getDecoder().decode(ssoResponse));
+            return ConverterUtils.decodeUsername(ssoResponse);
         }
         return "";
     }
 
-    /**
-     * 사용자 검증 및 Mock SSOUser 생성
-     *
-     * <p>실제 검증 없이 항상 유효한 Mock SSOUser를 생성합니다.
-     * 요청 정보를 기반으로 사용자 정보를 구성합니다.</p>
-     *
-     * @param username 사용자명
-     * @param request  HTTP 요청 객체
-     * @return Mock SSOUser 객체
-     */
     private SSOUser findUser(String username, HttpServletRequest request) {
         // 항상 사용자를 반환
         WebAuthenticationDetails details = authenticationDetailsSource.buildDetails(request);

@@ -1,64 +1,93 @@
 package io.github.carped99.nsso;
 
+import lombok.Getter;
+import nets.sso.agent.web.v9.SSOUser;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
+
 
 /**
- * NSSO 사용자 정보를 나타내는 인터페이스
- * 
- * <p>이 인터페이스는 NSSO에서 인증된 사용자의 정보를 Spring Security와 통합하기 위한 어댑터 역할을 합니다.
- * Spring Security의 AuthenticatedPrincipal을 확장하여 사용자 속성과 권한 정보를 제공합니다.</p>
- * 
+ * SSOUser를 Spring Security의 AuthenticatedPrincipal로 래핑하는 구현체
+ *
+ * <p>이 클래스는 NSSO 에이전트의 SSOUser 객체를 Spring Security와 통합하기 위한 어댑터 역할을 합니다.
+ * SSOUser의 정보를 NetsSsoUser 인터페이스에 맞게 변환하여 제공합니다.</p>
+ *
  * <p>주요 기능:</p>
  * <ul>
+ *   <li>SSOUser 정보 래핑</li>
  *   <li>사용자 속성 관리</li>
  *   <li>권한 정보 제공</li>
- *   <li>타입 안전한 속성 접근</li>
+ *   <li>불변 객체 보장</li>
  * </ul>
- * 
+ *
  * <p>사용 예시:</p>
  * <pre>{@code
- * NetsSsoUser user = (NetsSsoUser) authentication.getPrincipal();
+ * SSOUser ssoUser = authn.authn();
+ * NetsSsoUser user = new NetsSsoUserImpl(ssoUser, authorities);
  * String userId = user.getName();
- * String email = user.getAttribute("email");
- * Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
+ * Map<String, Object> attributes = user.getAttributes();
  * }</pre>
- * 
- * @see org.springframework.security.core.AuthenticatedPrincipal
- * @see org.springframework.security.core.GrantedAuthority
- * 
+ *
  * @author carped99
+ * @see SSOUser
+ * @see io.github.carped99.nsso.NetsSsoUser
+ * @see AuthenticatedPrincipal
  * @since 0.0.1
  */
-public interface NetsSsoUser extends AuthenticatedPrincipal {
-    /**
-     * 지정된 이름의 속성을 원하는 타입으로 캐스팅하여 반환합니다.
-     *
-     * @param name 속성 이름
-     * @param <A> 속성의 예상 타입
-     * @return 속성 값, 존재하지 않는 경우 null
-     */
-    @Nullable
-    @SuppressWarnings("unchecked")
-    default <A> A getAttribute(String name) {
-        return (A) getAttributes().get(name);
-    }
-
-    /**
-     * 사용자의 모든 속성을 Map 형태로 반환합니다.
-     * 
-     * @return 사용자 속성 Map (변경 불가능한 Map이어야 함)
-     */
-    Map<String, Object> getAttributes();
-
+public class NetsSsoUser implements AuthenticatedPrincipal {
+    private final SSOUser user;
     /**
      * 사용자의 권한 목록을 반환합니다.
-     * 
-     * @return 사용자 권한 목록
+     *
+     * @return 권한 목록
      */
-    Collection<? extends GrantedAuthority> getAuthorities();
+    @Getter
+    private final Collection<? extends GrantedAuthority> authorities;
+    /**
+     * 사용자의 속성 Map을 반환합니다.
+     *
+     * @return 불변 속성 Map
+     */
+    @Getter
+    private final Map<String, Object> attributes;
+
+    /**
+     * 주어진 SSO 사용자 정보로 NetsSsoUserImpl을 생성합니다.
+     *
+     * <p>사용자의 속성이 null이거나 비어있는 경우, 불변의 빈 Map을 사용합니다.
+     * 권한이 null인 경우 빈 권한 목록을 사용합니다.</p>
+     *
+     * @param user        래핑할 SSO 사용자 (null이 아니어야 함)
+     * @param authorities 사용자 권한 목록 (null 가능)
+     * @throws IllegalArgumentException user가 null인 경우
+     */
+    public NetsSsoUser(SSOUser user, @Nullable Collection<? extends GrantedAuthority> authorities) {
+        Assert.notNull(user, "user must not be null");
+        this.user = user;
+        this.authorities = Objects.requireNonNullElse(authorities, AuthorityUtils.NO_AUTHORITIES);
+
+        var attrs = user.getAttrs();
+        this.attributes = CollectionUtils.isEmpty(user.getAttrs()) ? Collections.emptyMap() : Collections.unmodifiableMap(attrs);
+    }
+
+
+    /**
+     * 사용자 ID를 반환합니다.
+     *
+     * @return 사용자 ID
+     */
+    @Override
+    public String getName() {
+        return user.getUserID();
+    }
+
 }

@@ -36,8 +36,7 @@
  * }</pre>
  * 
  * @see io.github.carped99.nsso.mock.NetsSsoMockServer
- * @see io.github.carped99.nsso.mock.NetsSsoAgentCheckMockService
- * @see io.github.carped99.nsso.mock.NetsSsoAuthenticationMockService
+ * @see io.github.carped99.nsso.mock.NetsSsoMockAuthenticationService
  * 
  * @author carped99
  * @since 0.0.1

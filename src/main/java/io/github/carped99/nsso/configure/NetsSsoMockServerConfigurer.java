@@ -1,9 +1,8 @@
 package io.github.carped99.nsso.configure;
 
-import io.github.carped99.nsso.NetsSsoAgentCheckService;
-import io.github.carped99.nsso.NetsSsoAgentConfigService;
+import io.github.carped99.nsso.NetsSsoAgentService;
 import io.github.carped99.nsso.NetsSsoAuthenticationService;
-import io.github.carped99.nsso.mock.NetsSsoAuthenticationMockService;
+import io.github.carped99.nsso.mock.NetsSsoMockAuthenticationService;
 import io.github.carped99.nsso.mock.NetsSsoMockAuthenticationSuccessHandler;
 import io.github.carped99.nsso.mock.NetsSsoMockServer;
 import org.apache.commons.logging.Log;
@@ -59,7 +58,7 @@ import java.util.Map;
  *
  * @author carped99
  * @see io.github.carped99.nsso.mock.NetsSsoMockServer
- * @see io.github.carped99.nsso.mock.NetsSsoAuthenticationMockService
+ * @see NetsSsoMockAuthenticationService
  * @see org.springframework.security.config.annotation.SecurityConfigurerAdapter
  * @since 0.0.1
  */
@@ -95,9 +94,8 @@ public class NetsSsoMockServerConfigurer<B extends HttpSecurityBuilder<B>> exten
         this.mockServer.configure(builder);
 
         // Bean 등록
-        NetsSsoConfigurerUtils.getBean(builder, NetsSsoAuthenticationService.class, NetsSsoAuthenticationMockService::new);
-        NetsSsoConfigurerUtils.getBean(builder, NetsSsoAgentCheckService.class, () -> mockServer.getAgentCheckService(this.checkCustomizer));
-        NetsSsoConfigurerUtils.getBean(builder, NetsSsoAgentConfigService.class, () -> mockServer.getAgentConfigService(this.configCustomizer));
+        NetsSsoConfigurerUtils.getBean(builder, NetsSsoAuthenticationService.class, NetsSsoMockAuthenticationService::new);
+        NetsSsoConfigurerUtils.getBean(builder, NetsSsoAgentService.class, () -> mockServer.getAgentService(prefixPath));
     }
 
     /**

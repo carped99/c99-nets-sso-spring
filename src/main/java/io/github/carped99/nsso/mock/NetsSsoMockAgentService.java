@@ -1,33 +1,34 @@
 package io.github.carped99.nsso.mock;
 
-import io.github.carped99.nsso.NetsSsoAgentConfigService;
+import io.github.carped99.nsso.NetsSsoAgentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServletServerHttpRequest;
-import org.springframework.lang.Nullable;
-import org.springframework.security.config.Customizer;
 import org.springframework.web.util.ForwardedHeaderUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import static io.github.carped99.nsso.NetsSsoUtils.normalizePath;
 
-class NetsSsoAgentConfigMockService implements NetsSsoAgentConfigService {
+public class NetsSsoMockAgentService implements NetsSsoAgentService {
     private final String prefixUrl;
-    private final Customizer<Map<String, Object>> customizer;
 
-    public NetsSsoAgentConfigMockService(String prefixUrl, @Nullable Customizer<Map<String, Object>> customizer) {
+    public NetsSsoMockAgentService(String prefixUrl) {
         this.prefixUrl = prefixUrl;
-        this.customizer = Objects.requireNonNullElseGet(customizer, Customizer::withDefaults);
     }
 
     @Override
-    public String process(HttpServletRequest request, HttpServletResponse response) {
+    public String check(HttpServletRequest request, HttpServletResponse response) {
+        Map<String, Object> result = new HashMap<>();
+        return ConverterUtils.writeAsString(result);
+    }
+
+    @Override
+    public String config(HttpServletRequest request, HttpServletResponse response) {
         // 1. Spring이 제공하는 HttpRequest로 래핑
         ServletServerHttpRequest serverHttpRequest = new ServletServerHttpRequest(request);
 
@@ -43,12 +44,25 @@ class NetsSsoAgentConfigMockService implements NetsSsoAgentConfigService {
         Map<String, Object> result = new HashMap<>();
         result.put("ssosite", "nets-sso-mock");
         result.put("urlSSOLogonService", normalizePath(contextPath, prefixUrl, NetsSsoMockServer.LOGON_PATH));
-        result.put("urlSSOLogoffService", normalizePath(contextPath, prefixUrl, NetsSsoMockServer.LOGOUT_PATH));
+        result.put("urlSSOLogoffService", normalizePath(contextPath, prefixUrl, NetsSsoMockServer.LOGOFF_PATH));
         result.put("urlSSOCheckService", normalizePath(contextPath, prefixUrl, NetsSsoMockServer.CHECK_PATH));
         result.put("defaultUrl", uriBuilder.toUriString());
 
-        customizer.customize(result);
-
         return ConverterUtils.writeAsString(result);
+    }
+
+    @Override
+    public String duplicate(HttpServletRequest request, HttpServletResponse response) {
+        return "";
+    }
+
+    @Override
+    public String key(HttpServletRequest request, HttpServletResponse response) {
+        return "";
+    }
+
+    @Override
+    public String tfa(HttpServletRequest request, HttpServletResponse response) {
+        return "";
     }
 }

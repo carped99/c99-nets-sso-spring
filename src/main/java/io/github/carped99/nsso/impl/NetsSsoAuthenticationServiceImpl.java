@@ -8,7 +8,6 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nets.sso.agent.web.common.constant.SSOConst;
-import nets.sso.agent.web.common.exception.SSOException;
 import nets.sso.agent.web.v9.SSOAuthn;
 import nets.sso.agent.web.v9.SSOStatus;
 import nets.sso.agent.web.v9.SSOUser;
@@ -93,7 +92,7 @@ public class NetsSsoAuthenticationServiceImpl implements NetsSsoAuthenticationSe
             log.debug(String.format("SSO authenticated: code=%s, status=%s, message=%s", status.getCode(), status.getStatus(), status.getMessage()));
             SSOUser ssoUser = authn.authn();
 
-            NetsSsoUser principal = new NetsSsoUserImpl(ssoUser, AuthorityUtils.NO_AUTHORITIES);
+            NetsSsoUser principal = new NetsSsoUser(ssoUser, AuthorityUtils.NO_AUTHORITIES);
             NetsSsoAuthentication authenticated = NetsSsoAuthentication.authenticated(principal, principal.getAuthorities());
             authenticated.setDetails(new WebAuthenticationDetails(request));
             return authenticated;

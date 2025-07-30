@@ -80,26 +80,6 @@ class NetsSsoMockServerTest {
     }
 
     @Test
-    void getAgentCheckService_ShouldReturnMockService() {
-        // when
-        var result = mockServer.getAgentCheckService(null);
-
-        // then
-        assertThat(result).isNotNull();
-        assertThat(result).isInstanceOf(NetsSsoAgentCheckMockService.class);
-    }
-
-    @Test
-    void getAgentConfigService_ShouldReturnMockService() {
-        // when
-        var result = mockServer.getAgentConfigService(null);
-
-        // then
-        assertThat(result).isNotNull();
-        assertThat(result).isInstanceOf(NetsSsoAgentConfigMockService.class);
-    }
-
-    @Test
     void getRequestMatcher_ShouldReturnRequestMatcher() {
         // given
         String prefixUrl = "/nsso";

@@ -1,23 +1,18 @@
 package io.github.carped99.nsso.mock;
 
-import io.github.carped99.nsso.NetsSsoAgentCheckService;
-import io.github.carped99.nsso.NetsSsoAgentConfigService;
+import io.github.carped99.nsso.NetsSsoAgentService;
+import io.github.carped99.nsso.NetsSsoUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpMethod;
-import org.springframework.lang.Nullable;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.csrf.CsrfFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.List;
-import java.util.Map;
+import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 /**
  * 개발 환경에서 사용할 NSSO Mock 서버
@@ -70,7 +65,7 @@ public class NetsSsoMockServer {
     /**
      * Mock 로그아웃 경로
      */
-    static final String LOGOUT_PATH = "/logoutService";
+    static final String LOGOFF_PATH = "/logoffService";
     /**
      * Mock 체크 경로
      */
@@ -78,7 +73,9 @@ public class NetsSsoMockServer {
 
     private String prefixUrl;
     private UserDetailsService userDetailsService;
-    private RequestMatcher requestMatcher;
+    private NetsSsoServerLogonFilter logonFilter;
+    private NetsSsoServerLogoutFilter logoffFilter;
+    private NetsSsoServerCheckFilter checkFilter;
 
     /**
      * Mock 서버를 Spring Security 설정에 추가합니다.
@@ -94,60 +91,29 @@ public class NetsSsoMockServer {
      * @param http HttpSecurity 빌더
      */
     public void configure(HttpSecurityBuilder<?> http) {
-        RequestMatcher logonRequestMatcher = createRequestMatcher(prefixUrl, LOGON_PATH);
-        RequestMatcher logoutRequestMatcher = createRequestMatcher(prefixUrl, LOGOUT_PATH);
-        RequestMatcher checkRequestMatcher = createRequestMatcher(prefixUrl, CHECK_PATH);
+        RequestMatcher logonRequestMatcher = antMatcher(HttpMethod.POST, NetsSsoUtils.normalizePath(prefixUrl, LOGON_PATH));
+        RequestMatcher logoffRequestMatcher = antMatcher(HttpMethod.POST, NetsSsoUtils.normalizePath(prefixUrl, LOGOFF_PATH));
+        RequestMatcher checkRequestMatcher = antMatcher(HttpMethod.POST, NetsSsoUtils.normalizePath(prefixUrl, CHECK_PATH));
 
-        var logonFilter = new NetsSsoServerLogonFilter(logonRequestMatcher, this.userDetailsService);
+        this.logonFilter = new NetsSsoServerLogonFilter(logonRequestMatcher, this.userDetailsService);
         http.addFilterAfter(logonFilter, CsrfFilter.class);
 
-        var logoutFilter = new NetsSsoServerLogoutFilter(logoutRequestMatcher);
-        http.addFilterAfter(logoutFilter, CsrfFilter.class);
+        this.logoffFilter = new NetsSsoServerLogoutFilter(logoffRequestMatcher);
+        http.addFilterAfter(logoffFilter, CsrfFilter.class);
 
-        var checkFilter = new NetsSsoServerCheckFilter(checkRequestMatcher);
+        this.checkFilter = new NetsSsoServerCheckFilter(checkRequestMatcher);
         http.addFilterAfter(checkFilter, CsrfFilter.class);
 
-        this.requestMatcher = new OrRequestMatcher(List.of(logonRequestMatcher, logoutRequestMatcher, checkRequestMatcher));
-
-        log.info("NetsSsoMockServer initialized: " + this.requestMatcher);
-    }
-
-    /**
-     * 접두사와 접미사를 결합하여 RequestMatcher를 생성합니다.
-     *
-     * @param prefix URL 접두사
-     * @param suffix URL 접미사
-     * @return POST 요청을 매칭하는 RequestMatcher
-     */
-    private RequestMatcher createRequestMatcher(String prefix, String suffix) {
-        var path = UriComponentsBuilder.fromPath(prefix)
-                .path(suffix)
-                .build()
-                .normalize()
-                .getPath();
-
-        assert path != null;
-        return AntPathRequestMatcher.antMatcher(HttpMethod.POST, path);
-    }
-
-    /**
-     * Mock 에이전트 설정 서비스를 생성합니다.
-     *
-     * @param customizer 설정 데이터 커스터마이저
-     * @return Mock 에이전트 설정 서비스
-     */
-    public NetsSsoAgentConfigService getAgentConfigService(@Nullable Customizer<Map<String, Object>> customizer) {
-        return new NetsSsoAgentConfigMockService(prefixUrl, customizer);
+        log.info("NetsSsoMockServer initialized: " + getRequestMatcher());
     }
 
     /**
      * Mock 에이전트 체크 서비스를 생성합니다.
      *
-     * @param customizer 체크 응답 데이터 커스터마이저
      * @return Mock 에이전트 체크 서비스
      */
-    public NetsSsoAgentCheckService getAgentCheckService(@Nullable Customizer<Map<String, Object>> customizer) {
-        return new NetsSsoAgentCheckMockService(customizer);
+    public NetsSsoAgentService getAgentService(String prefixPath) {
+        return new NetsSsoMockAgentService(prefixPath);
     }
 
     /**
@@ -156,7 +122,11 @@ public class NetsSsoMockServer {
      * @return 모든 Mock 엔드포인트를 매칭하는 RequestMatcher
      */
     public RequestMatcher getRequestMatcher() {
-        return requestMatcher;
+        return new OrRequestMatcher(
+                logonFilter.getRequestMatcher(),
+                checkFilter.getRequestMatcher(),
+                logoffFilter.getRequestMatcher()
+        );
     }
 
     /**

@@ -3,6 +3,8 @@ package io.github.carped99.nsso.mock;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -28,6 +30,7 @@ import java.io.IOException;
  * @since 0.0.1
  */
 public class NetsSsoMockAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+    protected final Log log = LogFactory.getLog(getClass());
     private final AuthenticationSuccessHandler handler;
 
     public NetsSsoMockAuthenticationSuccessHandler(AuthenticationSuccessHandler handler) {
@@ -36,9 +39,11 @@ public class NetsSsoMockAuthenticationSuccessHandler implements AuthenticationSu
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
-        String name = authentication.getName();
+        String value = ConverterUtils.encodeUsername(authentication.getName());
 
-        ResponseCookie cookie = ResponseCookie.from("mock-auth", name)
+        log.info("Set-Cookie: nsso-mock-auth=" + value);
+
+        ResponseCookie cookie = ResponseCookie.from("nsso-mock-auth", value)
                 .path("/")
                 .httpOnly(true)
                 .build();

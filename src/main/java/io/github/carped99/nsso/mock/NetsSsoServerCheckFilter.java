@@ -44,6 +44,10 @@ class NetsSsoServerCheckFilter extends OncePerRequestFilter {
         return !requestMatcher.matches(request);
     }
 
+    RequestMatcher getRequestMatcher() {
+        return requestMatcher;
+    }
+
     private NetsSsoServerCheckResponse success(Authentication authentication) {
         String username = authentication.getName();
         String token = Base64.getEncoder().withoutPadding().encodeToString(username.getBytes(StandardCharsets.UTF_8));

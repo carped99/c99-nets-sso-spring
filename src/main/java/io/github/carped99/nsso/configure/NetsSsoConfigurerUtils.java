@@ -7,10 +7,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.util.StringUtils;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -35,11 +32,6 @@ import java.util.function.Supplier;
  * }</pre>
  *
  * @author carped99
- * @see NetsSsoAgentCheckService
- * @see NetsSsoAgentConfigService
- * @see NetsSsoAgentDuplicateService
- * @see NetsSsoAgentTfaService
- * @see NetsSsoAgentKeyService
  * @since 0.0.1
  */
 final class NetsSsoConfigurerUtils {
@@ -51,55 +43,14 @@ final class NetsSsoConfigurerUtils {
     }
 
 
-
     /**
      * HttpSecurity 빌더에서 에이전트 체크 서비스를 조회하거나 생성합니다.
      *
      * @param httpSecurity HttpSecurity 빌더
      * @return 에이전트 체크 서비스 인스턴스
      */
-    public static NetsSsoAgentCheckService getAgentCheckService(HttpSecurityBuilder<?> httpSecurity) {
-        return getBean(httpSecurity, NetsSsoAgentCheckService.class, NetsSsoAgentCheckServiceImpl::new);
-    }
-
-    /**
-     * HttpSecurity 빌더에서 에이전트 설정 서비스를 조회하거나 생성합니다.
-     *
-     * @param httpSecurity HttpSecurity 빌더
-     * @return 에이전트 설정 서비스 인스턴스
-     */
-    public static NetsSsoAgentConfigService getAgentConfigService(HttpSecurityBuilder<?> httpSecurity) {
-        return getBean(httpSecurity, NetsSsoAgentConfigService.class, NetsSsoAgentConfigServiceImpl::new);
-    }
-
-    /**
-     * HttpSecurity 빌더에서 에이전트 중복 로그인 서비스를 조회하거나 생성합니다.
-     *
-     * @param httpSecurity HttpSecurity 빌더
-     * @return 에이전트 중복 로그인 서비스 인스턴스
-     */
-    public static NetsSsoAgentDuplicateService getAgentDuplicateService(HttpSecurityBuilder<?> httpSecurity) {
-        return getBean(httpSecurity, NetsSsoAgentDuplicateService.class, NetsSsoAgentDuplicateServiceImpl::new);
-    }
-
-    /**
-     * HttpSecurity 빌더에서 에이전트 키 서비스를 조회하거나 생성합니다.
-     *
-     * @param httpSecurity HttpSecurity 빌더
-     * @return 에이전트 키 서비스 인스턴스
-     */
-    public static NetsSsoAgentKeyService getAgentKeyService(HttpSecurityBuilder<?> httpSecurity) {
-        return getBean(httpSecurity, NetsSsoAgentKeyService.class, NetsSsoAgentKeyServiceImpl::new);
-    }
-
-    /**
-     * HttpSecurity 빌더에서 에이전트 2FA 서비스를 조회하거나 생성합니다.
-     *
-     * @param httpSecurity HttpSecurity 빌더
-     * @return 에이전트 2FA 서비스 인스턴스
-     */
-    public static NetsSsoAgentTfaService getAgentTfaService(HttpSecurityBuilder<?> httpSecurity) {
-        return getBean(httpSecurity, NetsSsoAgentTfaService.class, NetsSsoAgentTfaServiceImpl::new);
+    public static NetsSsoAgentService getAgentService(HttpSecurityBuilder<?> httpSecurity) {
+        return getBean(httpSecurity, NetsSsoAgentService.class, NetsSsoAgentServiceImpl::new);
     }
 
     /**
