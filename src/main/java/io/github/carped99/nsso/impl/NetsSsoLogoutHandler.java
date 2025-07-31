@@ -24,8 +24,11 @@ public class NetsSsoLogoutHandler implements LogoutHandler {
                 .addSsoAgentType()
                 .addHeader(SSOConst.OP, AuthnOperation.LOGOUT.getValue());
 
+        // BODY를 무시하고, 쿠키 제거하기 위해
+        var wrappedResponse = new NetsSsoNoBodyHttpServletResponseWrapper(response);
+
         // 1) SSO 인증 객체 초기화
-        SSOAuthn authn = SSOAuthn.get(wrappedRequest, response);
+        SSOAuthn authn = SSOAuthn.get(wrappedRequest, wrappedResponse);
         authn.authn();
     }
 }

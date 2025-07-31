@@ -3,12 +3,19 @@ package io.github.carped99.nsso.mock;
 import io.github.carped99.nsso.NetsSsoAgentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import nets.sso.agent.web.v9.core.AuthnStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.security.crypto.keygen.Base64StringKeyGenerator;
+import org.springframework.security.crypto.keygen.StringKeyGenerator;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.ForwardedHeaderUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +30,7 @@ import static io.github.carped99.nsso.NetsSsoUtils.normalizePath;
  * @since 0.0.1
  */
 public class NetsSsoMockAgentService implements NetsSsoAgentService {
+    private final StringKeyGenerator generator = new Base64StringKeyGenerator(Base64.getUrlEncoder().withoutPadding(), 32);
     private final String prefixUrl;
 
     /**
@@ -36,7 +44,26 @@ public class NetsSsoMockAgentService implements NetsSsoAgentService {
 
     @Override
     public String check(HttpServletRequest request, HttpServletResponse response) {
+        String username = ConverterUtils.obtainUsername(request);
         Map<String, Object> result = new HashMap<>();
+
+        if (StringUtils.hasText(username)) {
+            var userAttributes = Map.of(
+                    "LastLogonTime", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+            );
+
+            result.put("result", true);
+            result.put("authStatus", AuthnStatus.SSO_SUCCESS.name());
+            result.put("userId", username);
+            result.put("userAttribute", userAttributes);
+            result.put("token", generator.generateKey());
+        } else {
+            result.put("result", false);
+            result.put("authStatus", AuthnStatus.SSO_FIRST.name());
+            result.put("errorCode", 50000000);
+            result.put("errorMessage", "인증되지 않은 사용자입니다.");
+        }
+
         return ConverterUtils.writeAsString(result);
     }
 
@@ -66,16 +93,28 @@ public class NetsSsoMockAgentService implements NetsSsoAgentService {
 
     @Override
     public String duplicate(HttpServletRequest request, HttpServletResponse response) {
-        return "";
+        Map<String, Object> result = new HashMap<>();
+        result.put("result", false);
+        result.put("errorCode", 50000000);
+        result.put("errorMessage", "NotImplemented");
+        return ConverterUtils.writeAsString(result);
     }
 
     @Override
     public String key(HttpServletRequest request, HttpServletResponse response) {
-        return "";
+        Map<String, Object> result = new HashMap<>();
+        result.put("result", false);
+        result.put("errorCode", 50000000);
+        result.put("errorMessage", "NotImplemented");
+        return ConverterUtils.writeAsString(result);
     }
 
     @Override
     public String tfa(HttpServletRequest request, HttpServletResponse response) {
-        return "";
+        Map<String, Object> result = new HashMap<>();
+        result.put("result", false);
+        result.put("errorCode", 50000000);
+        result.put("errorMessage", "NotImplemented");
+        return ConverterUtils.writeAsString(result);
     }
 }

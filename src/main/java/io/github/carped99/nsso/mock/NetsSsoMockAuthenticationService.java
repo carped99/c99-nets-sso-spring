@@ -92,11 +92,7 @@ public class NetsSsoMockAuthenticationService implements NetsSsoAuthenticationSe
         if (StringUtils.hasText(ssoResponse)) {
             return ConverterUtils.decodeUsername(ssoResponse);
         }
-
-        return Optional.ofNullable(WebUtils.getCookie(request, MOCK_COOKIE_NAME))
-                .map(Cookie::getValue)
-                .map(ConverterUtils::decodeUsername)
-                .orElse("");
+        return ConverterUtils.obtainUsername(request);
     }
 
     private SSOUser findUser(String username, HttpServletRequest request) {

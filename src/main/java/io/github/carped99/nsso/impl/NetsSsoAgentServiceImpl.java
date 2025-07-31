@@ -3,10 +3,12 @@ package io.github.carped99.nsso.impl;
 import io.github.carped99.nsso.NetsSsoAgentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import nets.sso.agent.web.common.constant.SSOConst;
 import nets.sso.agent.web.common.exception.SSOException;
 import nets.sso.agent.web.v9.SSOAuthn;
 import nets.sso.agent.web.v9.SSOMfa;
 import nets.sso.agent.web.v9.SSOStatus;
+import nets.sso.agent.web.v9.core.AuthnOperation;
 
 /**
  * NSSO 에이전트 서비스의 기본 구현체
@@ -20,7 +22,10 @@ public class NetsSsoAgentServiceImpl implements NetsSsoAgentService {
 
     @Override
     public String check(HttpServletRequest request, HttpServletResponse response) {
-        var wrappedRequest = new NetsSsoHttpServletRequestWrapper(request).addSsoAgentType();
+        var wrappedRequest = new NetsSsoHttpServletRequestWrapper(request)
+                .addSsoAgentType()
+                .addHeader(SSOConst.OP, AuthnOperation.AUTHN.getValue());
+
         SSOAuthn authn = SSOAuthn.get(wrappedRequest, response);
         authn.authn();
         return authn.getUserJson();
