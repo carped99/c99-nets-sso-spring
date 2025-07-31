@@ -1,13 +1,14 @@
 package io.github.carped99.nsso.configure;
 
 import io.github.carped99.nsso.NetsSsoAuthenticationFilter;
-import io.github.carped99.nsso.NetsSsoRefreshTokenFilter;
+import io.github.carped99.nsso.NetsSsoTokenFilter;
 import io.github.carped99.nsso.impl.NetsSsoLogoutHandler;
 import io.github.carped99.nsso.mock.NetsSsoMockLogoutHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpMethod;
+import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -72,7 +73,7 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
  * @author carped99
  * @see org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer
  * @see NetsSsoAuthenticationFilter
- * @see NetsSsoRefreshTokenFilter
+ * @see NetsSsoTokenFilter
  * @since 0.0.1
  */
 public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder<B>> extends AbstractHttpConfigurer<NetsSsoAuthenticationConfigurer<B>, B> {
@@ -89,11 +90,15 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
     private LogoutSuccessHandler logoutSuccessHandler = new HttpStatusReturningLogoutSuccessHandler();
 
     private final NetsSsoAgentFilterConfigurer<B> agentFilterConfigurer = new NetsSsoAgentFilterConfigurer<>();
+
+    @Nullable
+    private NetsSsoTokenFilterConfigurer<B> tokenFilterConfigurer;
+
+    @Nullable
     private NetsSsoMockServerConfigurer<B> mockServerConfigurer;
 
     private RequestMatcher loginProcessRequestMatcher;
     private RequestMatcher logoutProcessRequestMatcher;
-    private RequestMatcher requestTokenRequestMatcher;
     private LogoutHandler[] logoutHandlers;
 
     /**
@@ -244,6 +249,13 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
         return this;
     }
 
+    public NetsSsoAuthenticationConfigurer<B> tokenFilter(Customizer<NetsSsoTokenFilterConfigurer<B>> customizer) {
+        Assert.notNull(customizer, "customizer must not be null");
+        this.tokenFilterConfigurer = Objects.requireNonNullElseGet(this.tokenFilterConfigurer, NetsSsoTokenFilterConfigurer::new);
+        customizer.customize(this.tokenFilterConfigurer);
+        return this;
+    }
+
     @Override
     public void init(B http) throws Exception {
         registerDefaultCsrfOverride(http);
@@ -258,40 +270,38 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
             this.mockServerConfigurer.configure(http);
         }
 
-        this.agentFilterConfigurer.setPrefixPath(this.prefixPath);
-        this.agentFilterConfigurer.configure(http);
+        this.agentFilterConfigurer.setPrefixPath(this.prefixPath).configure(http);
+
+        configureTokenFilter(http);
 
         configureAuthenticationFilter(http);
         configureLogoutFilter(http);
-        configureRefreshTokenFilter(http);
 
         configureEndpointsMatcher();
+    }
+
+    private void configureTokenFilter(B http) throws Exception {
+        if (tokenFilterConfigurer == null) {
+            return;
+        }
+
+        this.tokenFilterConfigurer.setPrefixPath(this.prefixPath);
+        if (this.tokenFilterConfigurer.getSuccessHandler() == null) {
+            this.tokenFilterConfigurer.successHandler(getSuccessHandler());
+        }
+
+        if (this.tokenFilterConfigurer.getFailureHandler() == null) {
+            this.tokenFilterConfigurer.failureHandler(getFailureHandler());
+        }
+
+        this.tokenFilterConfigurer.configure(http);
     }
 
     private void configureAuthenticationFilter(B http) {
         String url = normalizePath(this.prefixPath, "/login");
         this.loginProcessRequestMatcher = antMatcher(HttpMethod.POST, url);
         var filter = new NetsSsoAuthenticationFilter(loginProcessRequestMatcher);
-        configureAuthenticationProcessingFilter(http, filter);
-    }
 
-    private void configureLogoutFilter(B http) {
-        String url = normalizePath(this.prefixPath, "/logout");
-        this.logoutProcessRequestMatcher = antMatcher(url);
-        var handlers = getLogoutHandlers();
-        var filter = new LogoutFilter(this.logoutSuccessHandler, handlers);
-        filter.setLogoutRequestMatcher(this.logoutProcessRequestMatcher);
-        http.addFilter(filter);
-    }
-
-    private void configureRefreshTokenFilter(B http) {
-        String url = normalizePath(this.prefixPath, "/refresh_token");
-        this.requestTokenRequestMatcher = antMatcher(HttpMethod.POST, url);
-        var filter = new NetsSsoRefreshTokenFilter(requestTokenRequestMatcher);
-        configureAuthenticationProcessingFilter(http, filter);
-    }
-
-    private void configureAuthenticationProcessingFilter(B http, AbstractAuthenticationProcessingFilter filter) {
         filter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class));
         filter.setAuthenticationSuccessHandler(getSuccessHandler());
         filter.setAuthenticationFailureHandler(getFailureHandler());
@@ -308,12 +318,24 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
         http.addFilterBefore(postProcess(filter), UsernamePasswordAuthenticationFilter.class);
     }
 
+    private void configureLogoutFilter(B http) {
+        String url = normalizePath(this.prefixPath, "/logout");
+        this.logoutProcessRequestMatcher = antMatcher(url);
+        var handlers = getLogoutHandlers();
+        var filter = new LogoutFilter(this.logoutSuccessHandler, handlers);
+        filter.setLogoutRequestMatcher(this.logoutProcessRequestMatcher);
+        http.addFilter(filter);
+    }
+
     private void configureEndpointsMatcher() {
         List<RequestMatcher> requestMatchers = new ArrayList<>();
         requestMatchers.add(this.loginProcessRequestMatcher);
         requestMatchers.add(this.logoutProcessRequestMatcher);
-        requestMatchers.add(this.requestTokenRequestMatcher);
         requestMatchers.add(this.agentFilterConfigurer.getRequestMatcher());
+
+        if (this.tokenFilterConfigurer != null) {
+            requestMatchers.add(this.tokenFilterConfigurer.getRequestMatcher());
+        }
 
         if (this.mockServerConfigurer != null && this.mockServerConfigurer.isEnabled()) {
             requestMatchers.add(this.mockServerConfigurer.getRequestMatcher());
@@ -368,19 +390,23 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
         return Objects.requireNonNullElseGet(repository, HttpSessionSecurityContextRepository::new);
     }
 
-    private AuthenticationSuccessHandler getSuccessHandler() {
+    String getPrefixPath() {
+        return this.prefixPath;
+    }
+
+    AuthenticationSuccessHandler getSuccessHandler() {
         if (this.loginSuccessHandler == null) {
             this.loginSuccessHandler = new SimpleUrlAuthenticationSuccessHandler();
         }
 
         if (this.mockServerConfigurer != null && this.mockServerConfigurer.isEnabled()) {
-            this.loginSuccessHandler = this.mockServerConfigurer.getSuccessHandler(this.loginSuccessHandler);
+            this.loginSuccessHandler = this.mockServerConfigurer.decorateSuccessHandler(this.loginSuccessHandler);
         }
 
         return this.loginSuccessHandler;
     }
 
-    private AuthenticationFailureHandler getFailureHandler() {
+    AuthenticationFailureHandler getFailureHandler() {
         if (this.loginFailureHandler == null) {
             this.loginFailureHandler = new SimpleUrlAuthenticationFailureHandler("/login?error");
         }

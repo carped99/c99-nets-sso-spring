@@ -36,7 +36,7 @@ import static io.github.carped99.nsso.configure.NetsSsoConfigurerUtils.getBean;
  */
 public class NetsSsoAgentFilterConfigurer<B extends HttpSecurityBuilder<B>> extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, B> {
     private String prefixPath;
-    private RequestMatcher requsetMatcher;
+    private RequestMatcher requestMatcher;
 
     /**
      * NSSO 에이전트 필터를 Spring Security 설정에 추가합니다.
@@ -57,7 +57,7 @@ public class NetsSsoAgentFilterConfigurer<B extends HttpSecurityBuilder<B>> exte
     public void configure(B builder) throws Exception {
         NetsSsoAgentService agentService = getBean(builder, NetsSsoAgentService.class, NetsSsoAgentServiceImpl::new);
         var agentFilter = new NetsSsoAgentFilter(prefixPath, agentService);
-        this.requsetMatcher = agentFilter.getRequestMatcher();
+        this.requestMatcher = agentFilter.getRequestMatcher();
         builder.addFilterAfter(postProcess(agentFilter), CsrfFilter.class);
     }
 
@@ -67,15 +67,17 @@ public class NetsSsoAgentFilterConfigurer<B extends HttpSecurityBuilder<B>> exte
      * @return 모든 에이전트 서비스 요청을 매칭하는 RequestMatcher
      */
     RequestMatcher getRequestMatcher() {
-        return requsetMatcher;
+        return requestMatcher;
     }
 
     /**
      * URL 접두사를 설정합니다.
      *
      * @param prefixPath URL 접두사
+     * @return 현재 설정 객체
      */
-    void setPrefixPath(String prefixPath) {
+    NetsSsoAgentFilterConfigurer<B> setPrefixPath(String prefixPath) {
         this.prefixPath = prefixPath;
+        return this;
     }
 }

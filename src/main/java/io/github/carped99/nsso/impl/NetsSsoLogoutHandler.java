@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nets.sso.agent.web.common.constant.SSOConst;
 import nets.sso.agent.web.v9.SSOAuthn;
+import nets.sso.agent.web.v9.SSOUrl;
 import nets.sso.agent.web.v9.core.AuthnOperation;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -20,9 +21,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 public class NetsSsoLogoutHandler implements LogoutHandler {
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        var wrappedRequest = new NetsSsoHttpServletRequestWrapper(request)
-                .addSsoAgentType()
-                .addHeader(SSOConst.OP, AuthnOperation.LOGOUT.getValue());
+        var wrappedRequest = wrappedRequest(request, response);
 
         // BODY를 무시하고, 쿠키 제거하기 위해
         var wrappedResponse = new NetsSsoNoBodyHttpServletResponseWrapper(response);
@@ -30,5 +29,30 @@ public class NetsSsoLogoutHandler implements LogoutHandler {
         // 1) SSO 인증 객체 초기화
         SSOAuthn authn = SSOAuthn.get(wrappedRequest, wrappedResponse);
         authn.authn();
+    }
+
+    private HttpServletRequest wrappedRequest(HttpServletRequest request, HttpServletResponse response) {
+        SSOAuthn authn = new SSOAuthn(request, response);
+        String appCode = authn.getAppCode();
+        SSOUrl ssoUrl = authn.getUrl();
+        String appUrl = ssoUrl.getAppUrl();
+
+
+        NetsSsoHttpServletRequestWrapper wrapper = new NetsSsoHttpServletRequestWrapper(request)
+                .addSsoAgentType();
+
+        if (wrapper.getParameter(SSOConst.OP) == null) {
+            wrapper.addParameter(SSOConst.OP, AuthnOperation.LOGOUT.getValue());
+        }
+
+        if (wrapper.getParameter(SSOConst.SITE_ID) == null) {
+            wrapper.addParameter(SSOConst.SITE_ID, appCode);
+        }
+
+        if (wrapper.getParameter(SSOConst.RETURN_URL) == null) {
+            wrapper.addParameter(SSOConst.RETURN_URL, appUrl);
+        }
+
+        return wrapper;
     }
 }

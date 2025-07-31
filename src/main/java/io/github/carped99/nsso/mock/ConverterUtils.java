@@ -4,8 +4,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.lang.Nullable;
 import org.springframework.web.util.WebUtils;
 
 import java.io.IOException;
@@ -41,10 +40,17 @@ class ConverterUtils {
         return new String(Base64.getDecoder().decode(username));
     }
 
+    @Nullable
     public static String obtainUsername(HttpServletRequest request) {
         return Optional.ofNullable(WebUtils.getCookie(request, MOCK_COOKIE_NAME))
                 .map(Cookie::getValue)
                 .map(ConverterUtils::decodeUsername)
-                .orElse("");
+                .orElse(null);
+    }
+
+    public static String generateUserToken(String username) {
+        return Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(username.getBytes(StandardCharsets.UTF_8));
     }
 }

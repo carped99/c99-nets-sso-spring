@@ -6,8 +6,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import nets.sso.agent.web.v9.core.AuthnStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServletServerHttpRequest;
-import org.springframework.security.crypto.keygen.Base64StringKeyGenerator;
-import org.springframework.security.crypto.keygen.StringKeyGenerator;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.ForwardedHeaderUtils;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -15,11 +13,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
 import static io.github.carped99.nsso.NetsSsoUtils.normalizePath;
+import static io.github.carped99.nsso.mock.ConverterUtils.generateUserToken;
 
 /**
  * NSSO Mock 에이전트 서비스
@@ -30,7 +28,6 @@ import static io.github.carped99.nsso.NetsSsoUtils.normalizePath;
  * @since 0.0.1
  */
 public class NetsSsoMockAgentService implements NetsSsoAgentService {
-    private final StringKeyGenerator generator = new Base64StringKeyGenerator(Base64.getUrlEncoder().withoutPadding(), 32);
     private final String prefixUrl;
 
     /**
@@ -56,7 +53,7 @@ public class NetsSsoMockAgentService implements NetsSsoAgentService {
             result.put("authStatus", AuthnStatus.SSO_SUCCESS.name());
             result.put("userId", username);
             result.put("userAttribute", userAttributes);
-            result.put("token", generator.generateKey());
+            result.put("token", generateUserToken(username));
         } else {
             result.put("result", false);
             result.put("authStatus", AuthnStatus.SSO_FIRST.name());

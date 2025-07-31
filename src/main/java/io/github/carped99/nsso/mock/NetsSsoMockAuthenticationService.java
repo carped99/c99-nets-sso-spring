@@ -3,8 +3,8 @@ package io.github.carped99.nsso.mock;
 import io.github.carped99.nsso.NetsSsoAuthentication;
 import io.github.carped99.nsso.NetsSsoAuthenticationService;
 import io.github.carped99.nsso.NetsSsoUser;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import nets.sso.agent.web.common.constant.SSOConst;
 import nets.sso.agent.web.v9.SSOUser;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
@@ -13,12 +13,8 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
-import org.springframework.web.util.WebUtils;
 
 import java.util.Date;
-import java.util.Optional;
-
-import static io.github.carped99.nsso.mock.ConverterUtils.MOCK_COOKIE_NAME;
 
 /**
  * NSSO 인증 서비스의 Mock 구현체
@@ -56,24 +52,10 @@ import static io.github.carped99.nsso.mock.ConverterUtils.MOCK_COOKIE_NAME;
  * @since 0.0.1
  */
 public class NetsSsoMockAuthenticationService implements NetsSsoAuthenticationService {
-    /**
-     * 인증 상세 정보 소스
-     */
-    protected AuthenticationDetailsSource<HttpServletRequest, WebAuthenticationDetails> authenticationDetailsSource = new WebAuthenticationDetailsSource();
+    private final AuthenticationDetailsSource<HttpServletRequest, WebAuthenticationDetails> authenticationDetailsSource = new WebAuthenticationDetailsSource();
 
-    /**
-     * Mock NSSO 인증을 수행합니다.
-     *
-     * <p>요청에서 사용자명을 추출하고 Mock SSOUser를 생성하여
-     * 인증된 Authentication 객체를 반환합니다.</p>
-     *
-     * @param authentication 처리할 NSSO 인증 토큰
-     * @return 인증된 Authentication 객체
-     */
     @Override
-    public Authentication authenticate(NetsSsoAuthentication authentication) {
-        HttpServletRequest request = authentication.getRequest();
-
+    public Authentication authenticate(HttpServletRequest request, HttpServletResponse response) {
         // ssoResponse에 사용자 이름
         String username = obtainUsername(request);
 

@@ -1,17 +1,14 @@
 package io.github.carped99.nsso.impl;
 
 import io.github.carped99.nsso.NetsSsoAuthentication;
-import io.github.carped99.nsso.NetsSsoAuthenticationException;
 import io.github.carped99.nsso.NetsSsoAuthenticationService;
 import io.github.carped99.nsso.NetsSsoUser;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import nets.sso.agent.web.common.constant.SSOConst;
 import nets.sso.agent.web.v9.SSOAuthn;
 import nets.sso.agent.web.v9.SSOStatus;
 import nets.sso.agent.web.v9.SSOUser;
-import nets.sso.agent.web.v9.core.AuthnOperation;
 import nets.sso.agent.web.v9.core.AuthnStatus;
 import nets.sso.agent.web.v9.core.SSOConf;
 import org.apache.commons.logging.Log;
@@ -59,27 +56,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 public class NetsSsoAuthenticationServiceImpl implements NetsSsoAuthenticationService {
     private final Log log = LogFactory.getLog(getClass());
 
-    /**
-     * NSSO 인증 토큰을 처리하여 인증된 Authentication 객체를 반환합니다.
-     *
-     * <p>인증 처리 과정:</p>
-     * <ol>
-     *   <li>HTTP 요청을 NSSO 에이전트 타입으로 래핑</li>
-     *   <li>SSO 인증 객체 초기화</li>
-     *   <li>로그인 상태 확인 (authnLoginStay)</li>
-     *   <li>성공 시 사용자 정보 추출 및 인증된 토큰 생성</li>
-     *   <li>실패 시 예외 발생</li>
-     * </ol>
-     *
-     * @param authentication 처리할 NSSO 인증 토큰
-     * @return 인증된 Authentication 객체
-     * @throws NetsSsoAuthenticationException 인증 실패 시
-     */
     @Override
-    public Authentication authenticate(NetsSsoAuthentication authentication) {
-        HttpServletRequest request = authentication.getRequest();
-        HttpServletResponse response = authentication.getResponse();
-
+    public Authentication authenticate(HttpServletRequest request, HttpServletResponse response) {
         var wrappedRequest = new NetsSsoHttpServletRequestWrapper(request)
                 .addSsoAgentType();
 

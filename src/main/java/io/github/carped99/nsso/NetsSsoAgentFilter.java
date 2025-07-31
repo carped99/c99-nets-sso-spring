@@ -115,9 +115,6 @@ public class NetsSsoAgentFilter extends OncePerRequestFilter {
     /**
      * NSSO 에이전트 요청을 처리할 RequestMatcher를 반환합니다.
      *
-     * <p>이 메서드는 NSSO 에이전트의 다양한 요청 타입에 대한 RequestMatcher를
-     * OrRequestMatcher로 결합하여 반환합니다.</p>
-     *
      * @return NSSO 에이전트 요청을 처리할 RequestMatcher
      */
     public RequestMatcher getRequestMatcher() {

@@ -123,7 +123,7 @@ public class NetsSsoMockServerConfigurer<B extends HttpSecurityBuilder<B>> exten
         this.prefixPath = prefixPath;
     }
 
-    AuthenticationSuccessHandler getSuccessHandler(AuthenticationSuccessHandler successHandler) {
+    AuthenticationSuccessHandler decorateSuccessHandler(AuthenticationSuccessHandler successHandler) {
         Assert.notNull(successHandler, "successHandler must not be null");
         return new NetsSsoMockAuthenticationSuccessHandler(successHandler);
     }
