@@ -147,7 +147,7 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .with(configurer, sso -> sso
-                        .prefixUrl("/nsso")
+                        .prefixPath("/nsso")
                         .mockServer(server -> server
                                 .profiles("mocking-nsso")
                         )
@@ -182,7 +182,7 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
      * @param prefixPath NSSO 인증 엔드포인트의 URL 접두사
      * @return 현재 컨피규러 인스턴스
      */
-    public NetsSsoAuthenticationConfigurer<B> prefixUrl(String prefixPath) {
+    public NetsSsoAuthenticationConfigurer<B> prefixPath(String prefixPath) {
         this.prefixPath = prefixPath;
         return this;
     }
@@ -390,11 +390,7 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
         return Objects.requireNonNullElseGet(repository, HttpSessionSecurityContextRepository::new);
     }
 
-    String getPrefixPath() {
-        return this.prefixPath;
-    }
-
-    AuthenticationSuccessHandler getSuccessHandler() {
+    private AuthenticationSuccessHandler getSuccessHandler() {
         if (this.loginSuccessHandler == null) {
             this.loginSuccessHandler = new SimpleUrlAuthenticationSuccessHandler();
         }
@@ -406,7 +402,7 @@ public final class NetsSsoAuthenticationConfigurer<B extends HttpSecurityBuilder
         return this.loginSuccessHandler;
     }
 
-    AuthenticationFailureHandler getFailureHandler() {
+    private AuthenticationFailureHandler getFailureHandler() {
         if (this.loginFailureHandler == null) {
             this.loginFailureHandler = new SimpleUrlAuthenticationFailureHandler("/login?error");
         }

@@ -6,10 +6,11 @@ import io.github.carped99.nsso.NetsSsoTokenFilter;
 import org.springframework.lang.Nullable;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationFilter;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 
@@ -66,17 +67,20 @@ public class NetsSsoTokenFilterConfigurer<B extends HttpSecurityBuilder<B>> exte
     @Override
     public void configure(B builder) throws Exception {
         NetsSsoAuthenticationService authenticationService = getBean(builder, NetsSsoAuthenticationService.class);
-        Assert.state(authenticationService != null, "authenticationService must not be null");
+        Assert.state(authenticationService != null, "NetsSsoAuthenticationService required");
+
+        UserDetailsService userDetailsService = getBean(builder, UserDetailsService.class);
+        Assert.state(userDetailsService != null, "UserDetailsService required");
 
         this.requestMatcher = antMatcher(normalizePath(this.prefixPath, "/token"));
-        var filter = new NetsSsoTokenFilter(this.requestMatcher, authenticationService);
+        var filter = new NetsSsoTokenFilter(this.requestMatcher, authenticationService, userDetailsService);
 
         Assert.state(successHandler != null, "successHandler must not be null");
         Assert.state(failureHandler != null, "failureHandler must not be null");
         filter.setSuccessHandler(this.successHandler);
         filter.setFailureHandler(this.failureHandler);
 
-        builder.addFilterAfter(postProcess(filter), CsrfFilter.class);
+        builder.addFilterAfter(postProcess(filter), AuthenticationFilter.class);
     }
 
     /**

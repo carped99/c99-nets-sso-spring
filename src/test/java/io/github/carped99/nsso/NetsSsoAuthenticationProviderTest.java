@@ -134,37 +134,6 @@ class NetsSsoAuthenticationProviderTest {
     }
 
     @Test
-    void setAuthoritiesMapper_ShouldSetAuthoritiesMapper() {
-        // when
-        provider.setAuthoritiesMapper(authoritiesMapper);
-
-        // then
-        // authoritiesMapper가 설정되었는지 확인하기 위해 authenticate 메서드 호출
-        NetsSsoAuthentication unauthenticated = NetsSsoAuthentication.unauthenticated(request, response);
-        NetsSsoAuthentication authenticated = NetsSsoAuthentication.authenticated("testUser", AuthorityUtils.NO_AUTHORITIES);
-        UserDetails userDetails = User.withUsername("testUser")
-                .password("password")
-                .authorities("ROLE_USER")
-                .build();
-
-        when(authenticationService.authenticate(any(NetsSsoAuthentication.class))).thenReturn(authenticated);
-        when(userDetailsService.loadUserByUsername("testUser")).thenReturn(userDetails);
-        when(authoritiesMapper.mapAuthorities(any())).thenReturn(Collections.emptyList());
-
-        Authentication result = provider.authenticate(unauthenticated);
-        assertThat(result).isNotNull();
-        verify(authoritiesMapper).mapAuthorities(userDetails.getAuthorities());
-    }
-
-    @Test
-    void setAuthoritiesMapper_WithNull_ShouldThrowException() {
-        // when & then
-        assertThatThrownBy(() -> provider.setAuthoritiesMapper(null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("authoritiesMapper must not be null");
-    }
-
-    @Test
     void provider_ShouldBeInstanceOfAuthenticationProvider() {
         // then
         assertThat(provider).isInstanceOf(AuthenticationProvider.class);

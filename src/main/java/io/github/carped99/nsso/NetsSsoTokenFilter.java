@@ -4,8 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -37,6 +37,7 @@ import java.io.IOException;
 public class NetsSsoTokenFilter extends OncePerRequestFilter {
     private final RequestMatcher requestMatcher;
     private final NetsSsoAuthenticationService authenticationService;
+    private final UserDetailsService userDetailsService;
     private AuthenticationSuccessHandler successHandler;
     private AuthenticationFailureHandler failureHandler;
 
@@ -45,18 +46,24 @@ public class NetsSsoTokenFilter extends OncePerRequestFilter {
      *
      * @param requestMatcher 요청을 매칭하는 RequestMatcher
      */
-    public NetsSsoTokenFilter(RequestMatcher requestMatcher, NetsSsoAuthenticationService authenticationService) {
+    public NetsSsoTokenFilter(RequestMatcher requestMatcher, NetsSsoAuthenticationService authenticationService, UserDetailsService userDetailsService) {
         Assert.notNull(requestMatcher, "requestMatcher may not be null");
         Assert.notNull(authenticationService, "authenticationService may not be null");
         this.requestMatcher = requestMatcher;
         this.authenticationService = authenticationService;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
-            Authentication authenticate = authenticationService.authenticate(request, response);
-            successHandler.onAuthenticationSuccess(request, response, authenticate);
+            var authenticated = authenticationService.authenticate(request, response);
+            var userDetails = userDetailsService.loadUserByUsername(authenticated.getName());
+
+            var result = NetsSsoAuthentication.authenticated(userDetails, userDetails.getAuthorities());
+            result.setDetails(authenticated.getDetails());
+
+            successHandler.onAuthenticationSuccess(request, response, result);
         } catch (AuthenticationException e) {
             failureHandler.onAuthenticationFailure(request, response, e);
         }

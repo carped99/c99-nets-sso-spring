@@ -12,9 +12,9 @@ import org.springframework.util.StringUtils;
 
 /**
  * NSSO 인증 예외 변환 유틸리티 클래스
- * 
+ *
  * <p>이 클래스는 NSSO 에이전트의 SSOStatus를 Spring Security의 적절한 AuthenticationException으로 변환하는 기능을 제공합니다.</p>
- * 
+ *
  * <p>지원하는 예외 변환:</p>
  * <ul>
  *   <li>11020003 - UsernameNotFoundException (사용자를 찾을 수 없음)</li>
@@ -26,7 +26,7 @@ import org.springframework.util.StringUtils;
  *   <li>11070002 - CredentialsExpiredException (만료된 자격 증명)</li>
  *   <li>기타 - NetsSsoAuthenticationException (일반 NSSO 인증 예외)</li>
  * </ul>
- * 
+ *
  * <p>사용 예시:</p>
  * <pre>{@code
  * SSOStatus status = authn.authnLoginStay();
@@ -34,12 +34,11 @@ import org.springframework.util.StringUtils;
  *     throw ExceptionUtil.from(status);
  * }
  * }</pre>
- * 
+ *
+ * @author carped99
  * @see NetsSsoAuthenticationException
  * @see SSOStatus
  * @see AuthenticationException
- * 
- * @author carped99
  * @since 0.0.1
  */
 final class ExceptionUtil {
@@ -52,10 +51,10 @@ final class ExceptionUtil {
 
     /**
      * NSSO 상태를 Spring Security 인증 예외로 변환합니다.
-     * 
+     *
      * <p>SSOStatus의 코드에 따라 적절한 AuthenticationException을 생성합니다.
      * 메시지가 없는 경우 기본 메시지를 생성합니다.</p>
-     * 
+     *
      * @param status 변환할 NSSO 상태
      * @return 적절한 AuthenticationException 인스턴스
      */
